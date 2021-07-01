@@ -4,12 +4,6 @@ import os
 import random
 import shutil
 
-# learning rate / 100 teilen
-# in standard yolo cfgs sind test daten einkommentiert
-# pytorch yolo nutzt adam stat dem standard stochachistic gradient descent
-# steps muss ich vlt. ändern, pytorch yolo hört nur auf epochen,
-#       flo meinte aber steps könnte ich wahrscheinlich gleich lassen
-# vlt data augmentation ausmachen (default müssen an, aber andere können vlt aus)
 
 class SampleSelector(ABC):
     """Abstract class to select samples"""
