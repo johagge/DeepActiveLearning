@@ -38,7 +38,7 @@ class SampleSelector(ABC):
         samples = "\n".join(self.trainImages)
         # with open(os.path.join(self.outputdir, "train.txt", "w")) as f:
         #    f.write(samples)
-        with open(os.path.join(self.outputdir, "train.txt")) as f:
+        with open(os.path.join(self.outputdir, "train.txt"), "w") as f:
             f.write(samples)
 
     def copyFiles(self, toBeCopied):
@@ -68,17 +68,21 @@ class RandomSampleSelector(SampleSelector):
     def __init__(self, inputdir, outputdir):
         super().__init__(inputdir, outputdir)
 
-    def selectSamples(self, amount=5):
+    def selectSamples(self, amount=100):
         # selectedSamples = []
         # for i in range(amount):
             # sample = random.choice(self.trainImagesPool)
             # selectedSamples.append(sample)
             # self.trainImagesPool.remove(sample)
+        if amount > len(self.trainImagesPool):  # make sure this doesn't crash at the end
+            amount = len(self.trainImagesPool)
         random.shuffle(self.trainImagesPool)
         selectedSamples = self.trainImagesPool[:amount]
         self.trainImages.extend(selectedSamples)
-        self.trainImagesPool = self.trainImagesPool[amount:]
-
+        if amount < len(self.trainImagesPool):
+            self.trainImagesPool = self.trainImagesPool[amount:]
+        else:
+            self.trainImagesPool = [] # there are no images left
         # self.copyFiles(selectedSamples)
         self.writeSamplesToFile()
 
