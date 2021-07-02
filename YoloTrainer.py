@@ -19,8 +19,8 @@ sys.argv = args  # overwrite sys argv with new arguments
 
 amount = 1000
 imagePoolSize = 8894# 8894 is the number of images in the trainings set of TORSO-21
-randomSamples = samples.RandomSampleSelector("/homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/data/custom/images",
-                                             "/homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/data/custom")
+randomSamples = samples.RandomSampleSelector("/srv/ssd_nvm/15hagge/torso-fuer-pytorchyolo/custom/images/train",
+                                             "/homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/data/")
 for run in range(math.ceil(amount / imagePoolSize)):
     randomSamples.selectSamples(amount=1000)
     train.run()
