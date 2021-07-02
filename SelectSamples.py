@@ -3,7 +3,7 @@ import glob
 import os
 import random
 import shutil
-
+random.seed(42)
 
 class SampleSelector(ABC):
     """Abstract class to select samples"""
