@@ -14,12 +14,21 @@ random.seed(42)  # make experiments repeatable
 class SampleSelector(ABC):
     """Abstract class to select samples"""
 
-    def __init__(self, inputdir, outputdir):
-        self.inputdir = inputdir  # directory with images to choose from
-        self.outputdir = outputdir  # where list of selected images is located
+    def __init__(self, inputdir, outputdir, trainImagesPool=None):
+        """
 
-        self.trainImagesPool = []
-        self.findImages(self.inputdir)  # fill list with potential training images
+        :param inputdir: directory with images to choose from
+        :param outputdir: where list of selected images is located
+        :param trainImagesPool: if a training pool has already been created, it can be reused here
+        """
+        self.inputdir = inputdir
+        self.outputdir = outputdir
+
+        if not trainImagesPool:
+            self.trainImagesPool = []
+            self.findImages(self.inputdir)  # fill list with potential training images
+        else:
+            self.trainImagesPool = trainImagesPool
         # images are removed from the pool once they are labeled
 
         self.trainImages = []  # labeled training images
@@ -71,10 +80,15 @@ class RandomSampleSelector(SampleSelector):
     This is the baseline to compare other approaches to.
     """
 
-    def __init__(self, inputdir, outputdir):
-        super().__init__(inputdir, outputdir)
+    def __init__(self, inputdir, outputdir, trainImagesPool=None):
+        super().__init__(inputdir, outputdir, trainImagesPool)
 
     def selectSamples(self, amount=100):
+        """
+        selects samples randomly from the pool
+        :param amount: amount of images to add to pool
+        :return: current train images, pool of remaining images
+        """
         # selectedSamples = []
         # for i in range(amount):
             # sample = random.choice(self.trainImagesPool)
@@ -91,6 +105,52 @@ class RandomSampleSelector(SampleSelector):
             self.trainImagesPool = [] # there are no images left
         # self.copyFiles(selectedSamples)
         self.writeSamplesToFile()
+        return self.trainImages, self.trainImagesPool
+
+class meanConfidenceSelector(SampleSelector):
+    """
+    Select the samples which on average had the lowest confidences over all predictions
+    Questions to evaluate:
+        how do we treat no predictions?
+            too unsure for a prediction -> should be included?
+            no objects -> not important?
+            at first ignore them, use them later to prevent false negatives?
+    """
+
+    def __init__(self, inputdir, outputdir, trainImagesPool=None):
+        super().__init__(inputdir, outputdir, trainImagesPool)
+        # we can't load the weights here, because we need new ones after the next training
+
+
+    def selectSamples(self, amount=100):
+        """
+        selects samples based on the mean confidences from the pool
+        :param amount: amount of images to add to pool
+        :return: current train images, pool of remaining images
+        """
+        if amount > len(self.trainImagesPool):  # make sure this doesn't crash at the end
+            amount = len(self.trainImagesPool)
+
+        yolo = yoloPredictor.yoloPredictor()  # load weights here, because after sampling new weights are trained
+        predictionConfidences = []
+
+        print("Selecting samples based on confidences:")
+        for path in tqdm(self.trainImagesPool):
+            boxes = yolo.predict(path)
+            # boxes = [[x1, y1, x2, y2, confidence, class]]
+            # store one average confidence value per image
+            if len(boxes) > 0:
+                confidences = [cfd[4] for cfd in boxes]
+                meanConfidence = statistics.mean(confidences)
+                predictionConfidences.append([meanConfidence, path])
+
+        sortedPredictions = sorted(predictionConfidences)  # sort the list so we can take the first #amount items
+
+        for path in sortedPredictions[amount:]:  # remove already added images from pool
+            self.trainImagesPool.remove(path[1])
+        self.trainImages.extend(sortedPredictions[amount:])
+        self.writeSamplesToFile()
+        return self.trainImages, self.trainImagesPool
 
 if __name__ == "__main__":
     a = RandomSampleSelector("/homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/data/custom/images",
