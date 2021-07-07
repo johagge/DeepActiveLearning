@@ -14,7 +14,7 @@ random.seed(42)  # make experiments repeatable
 class SampleSelector(ABC):
     """Abstract class to select samples"""
 
-    def __init__(self, inputdir, outputdir, trainImagesPool=None):
+    def __init__(self, inputdir, outputdir, trainImages=None, trainImagesPool=None):
         """
 
         :param inputdir: directory with images to choose from
@@ -29,6 +29,7 @@ class SampleSelector(ABC):
             self.findImages(self.inputdir)  # fill list with potential training images
         else:
             self.trainImagesPool = trainImagesPool
+            self.trainImages = trainImages
         # images are removed from the pool once they are labeled
 
         self.trainImages = []  # labeled training images
@@ -80,8 +81,8 @@ class RandomSampleSelector(SampleSelector):
     This is the baseline to compare other approaches to.
     """
 
-    def __init__(self, inputdir, outputdir, trainImagesPool=None):
-        super().__init__(inputdir, outputdir, trainImagesPool)
+    def __init__(self, inputdir, outputdir, trainImages=None, trainImagesPool=None):
+        super().__init__(inputdir, outputdir, trainImages=trainImages, trainImagesPool=trainImagesPool )
 
     def selectSamples(self, amount=100):
         """
@@ -117,8 +118,8 @@ class meanConfidenceSelector(SampleSelector):
             at first ignore them, use them later to prevent false negatives?
     """
 
-    def __init__(self, inputdir, outputdir, trainImagesPool=None):
-        super().__init__(inputdir, outputdir, trainImagesPool)
+    def __init__(self, inputdir, outputdir,trainImages=None, trainImagesPool=None):
+        super().__init__(inputdir, outputdir, trainImages=trainImages, trainImagesPool=trainImagesPool )
         # we can't load the weights here, because we need new ones after the next training
 
 
@@ -146,9 +147,10 @@ class meanConfidenceSelector(SampleSelector):
 
         sortedPredictions = sorted(predictionConfidences)  # sort the list so we can take the first #amount items
 
-        for path in sortedPredictions[amount:]:  # remove already added images from pool
-            self.trainImagesPool.remove(path[1])
-        self.trainImages.extend(sortedPredictions[amount:])
+        for image in sortedPredictions[:amount]:  # remove already added images from pool
+            self.trainImagesPool.remove(image[1])
+            self.trainImages.append(image[1])
+        # self.trainImages.extend(sortedPredictions[amount:])
         self.writeSamplesToFile()
         return self.trainImages, self.trainImagesPool
 
