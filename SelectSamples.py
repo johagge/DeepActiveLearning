@@ -3,7 +3,13 @@ import glob
 import os
 import random
 import shutil
-random.seed(42)
+import statistics
+
+from tqdm import tqdm
+
+import yoloPredictor
+
+random.seed(42)  # make experiments repeatable
 
 class SampleSelector(ABC):
     """Abstract class to select samples"""
