@@ -24,15 +24,15 @@ class SampleSelector(ABC):
         self.inputdir = inputdir
         self.outputdir = outputdir
 
+
         if not trainImagesPool:
             self.trainImagesPool = []
             self.findImages(self.inputdir)  # fill list with potential training images
+            self.trainImages = []  # labeled training images
         else:
             self.trainImagesPool = trainImagesPool
             self.trainImages = trainImages
-        # images are removed from the pool once they are labeled
 
-        self.trainImages = []  # labeled training images
 
     @abstractmethod
     def selectSamples(self, amount=100):
@@ -145,8 +145,7 @@ class meanConfidenceSelector(SampleSelector):
                 meanConfidence = statistics.mean(confidences)
                 predictionConfidences.append([meanConfidence, path])
 
-        sortedPredictions = sorted(predictionConfidences)  # sort the list so we can take the first #amount items
-
+        sortedPredictions = sorted(predictionConfidences)  # sort the li_i
         for image in sortedPredictions[:amount]:  # remove already added images from pool
             self.trainImagesPool.remove(image[1])
             self.trainImages.append(image[1])
