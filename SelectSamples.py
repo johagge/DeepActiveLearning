@@ -145,7 +145,7 @@ class meanConfidenceSelector(SampleSelector):
                 meanConfidence = statistics.mean(confidences)
                 predictionConfidences.append([meanConfidence, path])
 
-        sortedPredictions = sorted(predictionConfidences)  # sort the li_i
+        sortedPredictions = sorted(predictionConfidences)  # sort the list so we can take the first #amount items
         for image in sortedPredictions[:amount]:  # remove already added images from pool
             self.trainImagesPool.remove(image[1])
             self.trainImages.append(image[1])
