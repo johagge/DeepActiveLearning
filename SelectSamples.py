@@ -118,9 +118,10 @@ class meanConfidenceSelector(SampleSelector):
             at first ignore them, use them later to prevent false negatives?
     """
 
-    def __init__(self, inputdir, outputdir,trainImages=None, trainImagesPool=None):
+    def __init__(self, inputdir, outputdir,trainImages=None, trainImagesPool=None, mode="mean"):
         super().__init__(inputdir, outputdir, trainImages=trainImages, trainImagesPool=trainImagesPool )
         # we can't load the weights here, because we need new ones after the next training
+        self.mode = mode
 
 
     def selectSamples(self, amount=100):
@@ -140,16 +141,21 @@ class meanConfidenceSelector(SampleSelector):
             boxes = yolo.predict(path)
             # boxes = [[x1, y1, x2, y2, confidence, class]]
             # store one average confidence value per image
-            if len(boxes) > 0:
-                confidences = [cfd[4] for cfd in boxes]
-                meanConfidence = statistics.mean(confidences)
-                predictionConfidences.append([meanConfidence, path])
+            if self.mode == "mean":
+                if len(boxes) > 0:
+                    confidences = [cfd[4] for cfd in boxes]
+                    meanConfidence = statistics.mean(confidences)
+                    predictionConfidences.append([meanConfidence, path])
+            elif self.mode == "min":
+                if len(boxes) > 0:
+                    confidences = [cfd[4] for cfd in boxes]
+                    minConfidence = min(confidences)
+                    predictionConfidences.append([minConfidence, path])
 
         sortedPredictions = sorted(predictionConfidences)  # sort the list so we can take the first #amount items
-        for image in sortedPredictions[:amount]:  # remove already added images from pool
-            self.trainImagesPool.remove(image[1])
+        for image in sortedPredictions[:amount]:
+            self.trainImagesPool.remove(image[1])  # remove about to be labeled images from pool
             self.trainImages.append(image[1])
-        # self.trainImages.extend(sortedPredictions[amount:])
         self.writeSamplesToFile()
         return self.trainImages, self.trainImagesPool
 
