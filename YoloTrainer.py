@@ -12,7 +12,7 @@ args += "--data /homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/data/robocup.da
 args += "--epochs 200".split(" ")
 args += "--pretrained_weights /homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/weights/yolov4-tiny.conv.29".split(" ")
 args += "--seed 42".split(" ")
-args += "--n_cpu 12".split(" ")
+args += "--n_cpu 6".split(" ")
 args += "--evaluation_interval 10".split(" ")
 
 sys.argv = args  # overwrite sys argv with new arguments
@@ -23,16 +23,13 @@ amount = 1000
 firstSampler = samples.RandomSampleSelector("/srv/ssd_nvm/15hagge/torso-fuer-pytorchyolo/custom/images/train",
                                             "/homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/data/")
 firstSamples = firstSampler.selectSamples(amount=amount)
-"""
+
 sampler = samples.meanConfidenceSelector("/srv/ssd_nvm/15hagge/torso-fuer-pytorchyolo/custom/images/train",
                                          "/homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/data/",
                                          trainImages=firstSamples[0],
-                                         trainImagesPool=firstSamples[1])
-"""
-sampler = samples.RandomSampleSelector("/srv/ssd_nvm/15hagge/torso-fuer-pytorchyolo/custom/images/train",
-                                         "/homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/data/",
-                                         trainImages=firstSamples[0],
-                                         trainImagesPool=firstSamples[1])
+                                         trainImagesPool=firstSamples[1],
+                                         mode="mean")
+
 imagePoolSize = len(sampler.trainImagesPool)
 
 
