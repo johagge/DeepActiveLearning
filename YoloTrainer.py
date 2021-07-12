@@ -28,7 +28,7 @@ sampler = samples.meanConfidenceSelector("/srv/ssd_nvm/15hagge/torso-fuer-pytorc
                                          "/homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/data/",
                                          trainImages=firstSamples[0],
                                          trainImagesPool=firstSamples[1],
-                                         mode="mean")
+                                         mode="min")
 
 imagePoolSize = len(sampler.trainImagesPool)
 
