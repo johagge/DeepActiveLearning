@@ -110,7 +110,7 @@ class RandomSampleSelector(SampleSelector):
 
 class meanConfidenceSelector(SampleSelector):
     """
-    Select the samples which on average had the lowest confidences over all predictions
+    Select the samples which (on average) had the lowest confidences over all predictions
     Questions to evaluate:
         how do we treat no predictions?
             too unsure for a prediction -> should be included?
@@ -141,7 +141,7 @@ class meanConfidenceSelector(SampleSelector):
             boxes = yolo.predict(path)
             # boxes = [[x1, y1, x2, y2, confidence, class]]
             # store one average confidence value per image
-            if self.mode == "mean":
+            if self.mode == "mean":  # TODO include images with zero boxes explicitely as another experiment
                 if len(boxes) > 0:
                     confidences = [cfd[4] for cfd in boxes]
                     meanConfidence = statistics.mean(confidences)
@@ -158,6 +158,52 @@ class meanConfidenceSelector(SampleSelector):
             self.trainImages.append(image[1])
         self.writeSamplesToFile()
         return self.trainImages, self.trainImagesPool
+
+
+class BoundingBoxAmountSelector(SampleSelector):
+    """
+    Select the samples which had the most or least bounding box predictions
+    """
+
+    def __init__(self, inputdir, outputdir,trainImages=None, trainImagesPool=None, mode="most"):
+        super().__init__(inputdir, outputdir, trainImages=trainImages, trainImagesPool=trainImagesPool )
+        # we can't load the weights here, because we need new ones after the next training
+        self.mode = mode
+
+
+    def selectSamples(self, amount=100):
+        """
+        selects samples based on the amount of predicted bounding boxes from the pool
+        :param amount: amount of images to add to pool
+        :return: current train images, pool of remaining images
+        """
+        if amount > len(self.trainImagesPool):  # make sure this doesn't crash at the end
+            amount = len(self.trainImagesPool)
+
+        yolo = yoloPredictor.yoloPredictor()  # load weights here, because after sampling new weights are trained
+        predictionConfidences = []
+
+        print("Selecting samples based on amount of bounding boxes:")
+        for path in tqdm(self.trainImagesPool):
+            boxes = yolo.predict(path)
+
+            length = len(boxes)
+            predictionConfidences.append([length, path])
+
+        sortedPredictions = sorted(predictionConfidences)  # sort the list so we can take the first #amount items
+        if self.mode == "least":
+            for image in sortedPredictions[:amount]:
+                self.trainImagesPool.remove(image[1])  # remove about to be labeled images from pool
+                self.trainImages.append(image[1])
+        if self.mode == "most":
+            for image in sortedPredictions[len(sortedPredictions)-amount:]:
+                self.trainImagesPool.remove(image[1])  # remove about to be labeled images from pool
+                self.trainImages.append(image[1])
+
+        self.writeSamplesToFile()
+        return self.trainImages, self.trainImagesPool
+
+
 
 if __name__ == "__main__":
     a = RandomSampleSelector("/homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/data/custom/images",
