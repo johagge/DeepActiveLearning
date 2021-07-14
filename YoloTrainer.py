@@ -7,7 +7,7 @@ import SelectSamples as samples
 # hacky way to set arguments...
 # this way we can use the argparse used by pytorchyolo
 args = [sys.argv[0]]  # put python filename in sys.argv
-args += "--model /homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/config/robocup_learning_rate.cfg".split(" ")  # TODO maybe change
+args += "--model /homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/config/robocup.cfg".split(" ")
 args += "--data /homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/data/robocup.data".split(" ")
 args += "--epochs 300".split(" ")  # TODO 200
 args += "--pretrained_weights /homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/weights/yolov4-tiny.conv.29".split(" ")
