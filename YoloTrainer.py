@@ -37,6 +37,9 @@ firstSamples = firstSampler.selectSamples(amount=amount)  # these are used for r
 if trainer_args.mode == "mean_confidence":
     sampler = samples.meanConfidenceSelector(inputdir, outputdir, trainImages=firstSamples[0],
                                              trainImagesPool=firstSamples[1], mode="mean")
+elif trainer_args.mode == "mean_confidence_no_boxes":
+    sampler = samples.meanConfidenceSelector(inputdir, outputdir, trainImages=firstSamples[0],
+                                             trainImagesPool=firstSamples[1], mode="mean_with_no_boxes")
 elif trainer_args.mode == "min_confidence":
     sampler = samples.meanConfidenceSelector(inputdir, outputdir, trainImages=firstSamples[0],
                                              trainImagesPool=firstSamples[1], mode="min")
