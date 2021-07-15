@@ -62,7 +62,7 @@ with open("log.txt", "a") as f:
 imagePoolSize = len(sampler.trainImagesPool)
 
 if not os.path.isfile("log.txt"):
-    input("Logfile already exists. Press ctrl+c to cancel execution")
+    sys.exit("Logfile already exists.")
 
 for run in range(10):  # range(math.ceil(imagePoolSize / amount)):
     print(f"___currently running {run} /  9")  # {range(math.ceil(imagePoolSize / amount))}")
