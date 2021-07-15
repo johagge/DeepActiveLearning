@@ -62,7 +62,7 @@ imagePoolSize = len(sampler.trainImagesPool)
 
 
 for run in range(10):  # range(math.ceil(imagePoolSize / amount)):
-    print(f"___currently running {run} /  10")  # {range(math.ceil(imagePoolSize / amount))}")
+    print(f"___currently running {run} /  9")  # {range(math.ceil(imagePoolSize / amount))}")
     if run == 0:
         pass  # we already selected samples randomly for this case
     else:
