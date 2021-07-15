@@ -56,13 +56,13 @@ else:
 
 print(f"Selecting Samples based on {trainer_args.mode}")
 
+if os.path.isfile("log.txt"):
+    sys.exit("Logfile already exists.")
+
 with open("log.txt", "a") as f:
     f.write(f"{trainer_args.mode}\n")
 
 imagePoolSize = len(sampler.trainImagesPool)
-
-if not os.path.isfile("log.txt"):
-    sys.exit("Logfile already exists.")
 
 for run in range(10):  # range(math.ceil(imagePoolSize / amount)):
     print(f"___currently running {run} /  9")  # {range(math.ceil(imagePoolSize / amount))}")
