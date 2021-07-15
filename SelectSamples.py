@@ -118,7 +118,7 @@ class meanConfidenceSelector(SampleSelector):
             at first ignore them, use them later to prevent false negatives?
     """
 
-    def __init__(self, inputdir, outputdir,trainImages=None, trainImagesPool=None, mode="mean"):
+    def __init__(self, inputdir, outputdir, trainImages=None, trainImagesPool=None, mode="mean"):
         super().__init__(inputdir, outputdir, trainImages=trainImages, trainImagesPool=trainImagesPool )
         # we can't load the weights here, because we need new ones after the next training
         self.mode = mode
