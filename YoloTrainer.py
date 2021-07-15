@@ -53,7 +53,7 @@ else:
     sys.exit("No or incorrect mode was provided")
 
 with open("log.txt", "a") as f:
-    f.write(f"mean_confidence\n")  # TODO dynamically change this
+    f.write(f"{trainer_args.mode}\n")
 
 imagePoolSize = len(sampler.trainImagesPool)
 
