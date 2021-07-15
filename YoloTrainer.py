@@ -31,6 +31,9 @@ sampler = samples.meanConfidenceSelector("/srv/ssd_nvm/15hagge/torso-fuer-pytorc
                                          trainImagesPool=firstSamples[1],
                                          mode="mean")
 
+with open("log.txt", "a") as f:
+    f.write(f"mean_confidence\n")  # TODO dynamically change this
+
 imagePoolSize = len(sampler.trainImagesPool)
 
 
