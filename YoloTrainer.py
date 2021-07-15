@@ -66,4 +66,4 @@ for run in range(10):  # range(math.ceil(imagePoolSize / amount)):
         sampler.selectSamples(amount=amount)
     train.run()
     with open("log.txt", "a") as f:
-        f.write(f"_done with run: {run+1}\n")
+        f.write(f"_done with run: {run+1}. Used {(run+1) * amount} images so far.\n")
