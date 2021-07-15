@@ -55,6 +55,8 @@ elif trainer_args.mode == "most_bb":
 else:
     sys.exit("No or incorrect mode was provided")
 
+print(f"Selecting Samples based on {trainer_args.mode}")
+
 with open("log.txt", "a") as f:
     f.write(f"{trainer_args.mode}\n")
 
