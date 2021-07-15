@@ -3,33 +3,54 @@ import math
 from pytorchyolo import utils, train
 from pytorchyolo import train
 import SelectSamples as samples
+import argparse
+
+parser = argparse.ArgumentParser(description="Trains a YOLO and selects the most helpful samples for annotating")
+parser.add_argument("-m", "--mode", type=str, help="Mode to select samples, e.g. 'random'")
+
+trainer_args = parser.parse_args()
+
+
 
 # hacky way to set arguments...
 # this way we can use the argparse used by pytorchyolo
 args = [sys.argv[0]]  # put python filename in sys.argv
 args += "--model /homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/config/robocup.cfg".split(" ")
 args += "--data /homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/data/robocup.data".split(" ")
-args += "--epochs 201".split(" ")  # as the numbers are zero indexed, this will give me evaluation for the 200th run
+args += "--epochs 201".split(" ")  # as the numbers are zero indexed, this provides evaluation results of the 200th run
 args += "--pretrained_weights /homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/weights/yolov4-tiny.conv.29".split(" ")
 args += "--seed 42".split(" ")
 args += "--n_cpu 4".split(" ")
-args += "--evaluation_interval 10".split(" ")
+args += "--evaluation_interval 25".split(" ")
 
 sys.argv = args  # overwrite sys argv with new arguments
 
 amount = 100
+inputdir = "/srv/ssd_nvm/15hagge/torso-fuer-pytorchyolo/custom/images/train"
+outputdir = "/homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/data/"
+
 
 # Generate the first samples randomly assuming we have no suitable heuristic for the first ones
-firstSampler = samples.RandomSampleSelector("/srv/ssd_nvm/15hagge/torso-fuer-pytorchyolo/custom/images/train",
-                                            "/homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/data/")
+firstSampler = samples.RandomSampleSelector(inputdir, outputdir)
 firstSamples = firstSampler.selectSamples(amount=amount)  # these are used for run 0 of the training
 
-
-sampler = samples.meanConfidenceSelector("/srv/ssd_nvm/15hagge/torso-fuer-pytorchyolo/custom/images/train",
-                                         "/homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/data/",
-                                         trainImages=firstSamples[0],
-                                         trainImagesPool=firstSamples[1],
-                                         mode="mean")
+if trainer_args.mode == "mean_confidence":
+    sampler = samples.meanConfidenceSelector(inputdir, outputdir, trainImages=firstSamples[0],
+                                             trainImagesPool=firstSamples[1], mode="mean")
+elif trainer_args.mode == "min_confidence":
+    sampler = samples.meanConfidenceSelector(inputdir, outputdir, trainImages=firstSamples[0],
+                                             trainImagesPool=firstSamples[1], mode="min")
+elif trainer_args.mode == "random":
+    sampler = samples.RandomSampleSelector(inputdir, outputdir, trainImages=firstSamples[0],
+                                           trainImagesPool=firstSamples[1])
+elif trainer_args.mode == "min_bb":
+    sampler = samples.BoundingBoxAmountSelector(inputdir, outputdir, trainImages=firstSamples[0],
+                                                trainImagesPool=firstSamples[1], mode="least")
+elif trainer_args.mode == "most_bb":
+    sampler = samples.BoundingBoxAmountSelector(inputdir, outputdir, trainImages=firstSamples[0],
+                                                trainImagesPool=firstSamples[1], mode="most")
+else:
+    sys.exit("No or incorrect mode was provided")
 
 with open("log.txt", "a") as f:
     f.write(f"mean_confidence\n")  # TODO dynamically change this
