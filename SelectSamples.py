@@ -4,6 +4,8 @@ import os
 import random
 import shutil
 import statistics
+from imagecorruptions import corrupt
+import cv2
 
 from tqdm import tqdm
 
@@ -141,7 +143,7 @@ class meanConfidenceSelector(SampleSelector):
             boxes = yolo.predict(path)
             # boxes = [[x1, y1, x2, y2, confidence, class]]
             # store one average confidence value per image
-            if self.mode == "mean":  # TODO include images with zero boxes explicitely as another experiment
+            if self.mode == "mean":
                 if len(boxes) > 0:
                     confidences = [cfd[4] for cfd in boxes]
                     meanConfidence = statistics.mean(confidences)
@@ -161,6 +163,13 @@ class meanConfidenceSelector(SampleSelector):
                     confidences = [cfd[4] for cfd in boxes]
                     minConfidence = min(confidences)
                     predictionConfidences.append([minConfidence, path])
+
+            elif self.mode == "lowest_max":
+                if len(boxes) > 0:
+                    confidences = [cfd[4] for cfd in boxes]
+                    maxConfidence = max(confidences)
+                    predictionConfidences.append([maxConfidence, path])
+
 
         sortedPredictions = sorted(predictionConfidences)  # sort the list so we can take the first #amount items
         for image in sortedPredictions[:amount]:
@@ -213,6 +222,43 @@ class BoundingBoxAmountSelector(SampleSelector):
         self.writeSamplesToFile()
         return self.trainImages, self.trainImagesPool
 
+class noiseSelector(SampleSelector):
+    """"
+    Apply noise to the image and compare how much the prediction changes
+    The intuition is that a large difference in prediction means uncertain initial prediction
+    """
+
+    def __init__(self, inputdir, outputdir,trainImages=None, trainImagesPool=None, mode=""):
+        super().__init__(inputdir, outputdir, trainImages=trainImages, trainImagesPool=trainImagesPool )
+        self.mode = mode
+
+    def selectSamples(self, amount=100):
+        """
+        selects samples by first applying noise and then comparing the predictions
+        :param amount: amount of images to add to pool
+        :return: current train images, pool of remaining images
+        """
+        if amount > len(self.trainImagesPool):  # make sure this doesn't crash at the end
+            amount = len(self.trainImagesPool)
+
+        yolo = yoloPredictor.yoloPredictor()  # load weights here, because after sampling new weights are trained
+
+
+        print("Selecting samples after applying noise to the samples:")
+        for path in tqdm(self.trainImagesPool):
+            img = cv2.imread(path)
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+            # get prediction from uncorrupted image
+            init_boxes = yolo.predictFromLoadedImage(path)
+
+            # apply corruption
+            gaussian_noised_image = corrupt(img, corruption_name="gaussian_noise", severity=1)
+            gaussian_boxes = yolo.predictFromLoadedImage(gaussian_noised_image)
+            motion_blurred_image = corrupt(img, corruption_name="motion_blur", severity=3)
+            motion_boxes = yolo.predictFromLoadedImage(motion_blurred_image)
+
+            # TODO test corruptions and comparison of predictions
 
 
 if __name__ == "__main__":
