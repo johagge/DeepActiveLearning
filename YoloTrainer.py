@@ -48,6 +48,9 @@ elif trainer_args.mode == "lowest_max_confidence":
 elif trainer_args.mode == "median":
     sampler = samples.meanConfidenceSelector(inputdir, outputdir, trainImages=firstSamples[0],
                                              trainImagesPool=firstSamples[1], mode="median")
+elif trainer_args.mode == "max":
+    sampler = samples.meanConfidenceSelector(inputdir, outputdir, trainImages=firstSamples[0],
+                                             trainImagesPool=firstSamples[1], mode="max")
 elif trainer_args.mode == "random":
     sampler = samples.RandomSampleSelector(inputdir, outputdir, trainImages=firstSamples[0],
                                            trainImagesPool=firstSamples[1])

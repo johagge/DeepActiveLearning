@@ -171,7 +171,7 @@ class meanConfidenceSelector(SampleSelector):
                     minConfidence = min(confidences)
                     predictionConfidences.append([minConfidence, path])
 
-            elif self.mode == "lowest_max":
+            elif self.mode == "lowest_max" or self.mode == "max":
                 if len(boxes) > 0:
                     confidences = [cfd[4] for cfd in boxes]
                     maxConfidence = max(confidences)
@@ -179,6 +179,9 @@ class meanConfidenceSelector(SampleSelector):
 
 
         sortedPredictions = sorted(predictionConfidences)  # sort the list so we can take the first #amount items
+        if self.mode == "max":
+            # reverse the list, now the highest predictions are at the start of the list
+            sortedPredictions = reversed(sortedPredictions)
         for image in sortedPredictions[:amount]:
             self.trainImagesPool.remove(image[1])  # remove about to be labeled images from pool
             self.trainImages.append(image[1])
