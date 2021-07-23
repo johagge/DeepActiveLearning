@@ -148,8 +148,9 @@ class meanConfidenceSelector(SampleSelector):
                     confidences = [cfd[4] for cfd in boxes]
                     meanConfidence = statistics.mean(confidences)
                     predictionConfidences.append([meanConfidence, path])
+
             # prefer images with no bounding boxes, because objects are very common in our domain
-            if self.mode == "mean_with_no_boxes":
+            elif self.mode == "mean_with_no_boxes":
                 if len(boxes) == 0:
                     meanConfidence = 0
                 else:
@@ -157,6 +158,12 @@ class meanConfidenceSelector(SampleSelector):
                     meanConfidence = statistics.mean(confidences)
                     predictionConfidences.append([meanConfidence, path])
                 predictionConfidences.append([meanConfidence, path])
+
+            elif self.mode == "median":
+                if len(boxes) > 0:
+                    confidences = [cfd[4] for cfd in boxes]
+                    median = statistics.median(confidences)
+                    predictionConfidences.append([median, path])
 
             elif self.mode == "min":
                 if len(boxes) > 0:
