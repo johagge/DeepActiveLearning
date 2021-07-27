@@ -308,7 +308,7 @@ class noiseSelector(SampleSelector):
                         if len(confidences) == 0:
                             confidences_by_class[i].append(0)
                         else:
-                            confidences_by_class[i].append(statistics.mean(confidences))
+                            confidences_by_class[i].append(np.mean(confidences))
                 else:
                     # this could be any number between the min yolo threshold we use and 0
                     # for simplicity we assume it to be 0
@@ -318,7 +318,7 @@ class noiseSelector(SampleSelector):
             # calculate difference between e.g. confidence in two ball predictions
             # use absolute numbers, because we don't care which was more confident
             results.append(abs(confidences_by_class[0][i] - confidences_by_class[1][i]))
-        return statistics.mean(results), results
+        return np.mean(results), results
 
 if __name__ == "__main__":
     a = RandomSampleSelector("/homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/data/custom/images",
