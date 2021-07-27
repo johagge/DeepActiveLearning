@@ -6,6 +6,7 @@ import shutil
 import statistics
 from imagecorruptions import corrupt
 import cv2
+import numpy as np
 
 from tqdm import tqdm
 
@@ -261,7 +262,7 @@ class noiseSelector(SampleSelector):
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
             # get prediction from uncorrupted image
-            init_boxes = yolo.predictFromLoadedImage(path)
+            init_boxes = yolo.predict(path)
 
             # apply corruption
             gaussian_noised_image = corrupt(img, corruption_name="gaussian_noise", severity=1)
@@ -294,7 +295,10 @@ class noiseSelector(SampleSelector):
                         if detection[5] == object_class:
                             confidences.append(detection[4])
                     if mode == "mean":
-                        confidences_by_class[i].append(statistics.mean(confidences))
+                        if len(confidences) == 0:
+                            confidences_by_class[i].append(0)
+                        else:
+                            confidences_by_class[i].append(statistics.mean(confidences))
                 else:
                     # this could be any number between the min yolo threshold we use and 0
                     # for simplicity we assume it to be 0
@@ -305,7 +309,6 @@ class noiseSelector(SampleSelector):
             # use absolute numbers, because we don't care which was more confident
             results.append(abs(confidences_by_class[0][i] - confidences_by_class[1][i]))
         return statistics.mean(results), results
-        # todo look at variables and see if they make sense
 
 if __name__ == "__main__":
     a = RandomSampleSelector("/homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/data/custom/images",
