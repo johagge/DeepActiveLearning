@@ -265,14 +265,24 @@ class noiseSelector(SampleSelector):
             init_boxes = yolo.predict(path)
 
             # apply corruption
-            gaussian_noised_image = corrupt(img, corruption_name="gaussian_noise", severity=1)
-            gaussian_boxes = yolo.predictFromLoadedImage(gaussian_noised_image)
-            motion_blurred_image = corrupt(img, corruption_name="motion_blur", severity=3)
-            motion_boxes = yolo.predictFromLoadedImage(motion_blurred_image)
-
-            # TODO test comparison of predictions
             if self.mode == "gaussian_mean_difference":
-                self.calc_confidence_difference(init_boxes, gaussian_boxes, "mean")
+                gaussian_noised_image = corrupt(img, corruption_name="gaussian_noise", severity=1)
+                gaussian_boxes = yolo.predictFromLoadedImage(gaussian_noised_image)
+            elif self.mode == "motion_mean_difference":
+                motion_blurred_image = corrupt(img, corruption_name="motion_blur", severity=3)
+                motion_boxes = yolo.predictFromLoadedImage(motion_blurred_image)
+
+            differences = []
+            if self.mode == "gaussian_mean_difference":
+                difference = self.calc_confidence_difference(init_boxes, gaussian_boxes, "mean")
+                differences.append([difference, path])
+
+        sorted_differences = sorted(difference)  # sort the list so we can take the first #amount items
+        for image in sorted_differences[:amount]:
+            self.trainImagesPool.remove(image[1])  # remove about to be labeled images from pool
+            self.trainImages.append(image[1])
+        self.writeSamplesToFile()
+        return self.trainImages, self.trainImagesPool
 
 
     def calc_confidence_difference(self, first_preds, second_preds, mode):
