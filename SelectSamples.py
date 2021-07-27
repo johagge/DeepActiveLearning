@@ -182,7 +182,7 @@ class meanConfidenceSelector(SampleSelector):
         sortedPredictions = sorted(predictionConfidences)  # sort the list so we can take the first #amount items
         if self.mode == "max":
             # reverse the list, now the highest predictions are at the start of the list
-            sortedPredictions = reversed(sortedPredictions)
+            sortedPredictions = sortedPredictions[::-1]
         for image in sortedPredictions[:amount]:
             self.trainImagesPool.remove(image[1])  # remove about to be labeled images from pool
             self.trainImages.append(image[1])
