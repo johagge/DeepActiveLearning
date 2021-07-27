@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 import glob
 import os
 import random
-import math
 import shutil
 import statistics
 from imagecorruptions import corrupt
@@ -271,7 +270,7 @@ class noiseSelector(SampleSelector):
             motion_boxes = yolo.predictFromLoadedImage(motion_blurred_image)
 
             # TODO test comparison of predictions
-            if self.mode == "gaussian_confidence_mean_difference":
+            if self.mode == "gaussian_mean_difference":
                 self.calc_confidence_difference(init_boxes, gaussian_boxes, "mean")
 
 
@@ -304,8 +303,7 @@ class noiseSelector(SampleSelector):
         for i in range(len(confidences_by_class[0])):
             # calculate difference between e.g. confidence in two ball predictions
             # use absolute numbers, because we don't care which was more confident
-            results.append(math.abs(confidences_by_class[0][i] - confidences_by_class[1][i]))
-
+            results.append(abs(confidences_by_class[0][i] - confidences_by_class[1][i]))
         return statistics.mean(results), results
         # todo look at variables and see if they make sense
 

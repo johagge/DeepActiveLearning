@@ -60,6 +60,9 @@ elif trainer_args.mode == "min_bb":
 elif trainer_args.mode == "most_bb":
     sampler = samples.BoundingBoxAmountSelector(inputdir, outputdir, trainImages=firstSamples[0],
                                                 trainImagesPool=firstSamples[1], mode="most")
+elif trainer_args.mode == "gaussian_mean_difference":
+    sampler = samples.noiseSelector(inputdir, outputdir, trainImages=firstSamples[0],
+                                    trainImagesPool=firstSamples[1], mode="gaussian_mean_difference")
 else:
     sys.exit("No or incorrect mode was provided")
 
