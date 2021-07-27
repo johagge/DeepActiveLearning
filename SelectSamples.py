@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 import glob
 import os
 import random
+import math
 import shutil
 import statistics
 from imagecorruptions import corrupt
@@ -241,6 +242,7 @@ class noiseSelector(SampleSelector):
     def __init__(self, inputdir, outputdir,trainImages=None, trainImagesPool=None, mode=""):
         super().__init__(inputdir, outputdir, trainImages=trainImages, trainImagesPool=trainImagesPool )
         self.mode = mode
+        self.number_of_classes = 6
 
     def selectSamples(self, amount=100):
         """
@@ -268,8 +270,44 @@ class noiseSelector(SampleSelector):
             motion_blurred_image = corrupt(img, corruption_name="motion_blur", severity=3)
             motion_boxes = yolo.predictFromLoadedImage(motion_blurred_image)
 
-            # TODO test corruptions and comparison of predictions
+            # TODO test comparison of predictions
+            if self.mode == "gaussian_confidence_mean_difference":
+                self.calc_confidence_difference(init_boxes, gaussian_boxes, "mean")
 
+
+    def calc_confidence_difference(self, first_preds, second_preds, mode):
+        """
+        first_preds: initial predictions of neural network with no noise
+        second_preds: predictions after noise was applied to the image
+        mode: select which values should be compared. options are: mean, median, max, min
+        returns: mean of differences, list of differences
+        """
+        predictions = [first_preds, second_preds]
+        confidences_by_class = []
+        for i, pred in enumerate(predictions):
+            # add an empty list to the confidences in which we then put the confidences of our predictions
+            confidences_by_class.append([])
+            # ball, goalpost, robot, L-, T-, X-intersection are the classes in this order
+            for object_class in range(0, self.number_of_classes):
+                confidences = []
+                if len(pred) > 0:
+                    for detection in pred:
+                        if detection[5] == object_class:
+                            confidences.append(detection[4])
+                    if mode == "mean":
+                        confidences_by_class[i].append(statistics.mean(confidences))
+                else:
+                    # this could be any number between the min yolo threshold we use and 0
+                    # for simplicity we assume it to be 0
+                    confidences_by_class[i].append(0)
+        results = []
+        for i in range(len(confidences_by_class[0])):
+            # calculate difference between e.g. confidence in two ball predictions
+            # use absolute numbers, because we don't care which was more confident
+            results.append(math.abs(confidences_by_class[0][i] - confidences_by_class[1][i]))
+
+        return statistics.mean(results), results
+        # todo look at variables and see if they make sense
 
 if __name__ == "__main__":
     a = RandomSampleSelector("/homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/data/custom/images",
