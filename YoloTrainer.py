@@ -76,12 +76,21 @@ with open("log.txt", "a") as f:
 
 imagePoolSize = len(sampler.trainImagesPool)
 
+errors = []
+
 for run in range(10):  # range(math.ceil(imagePoolSize / amount)):
     print(f"___currently running {run} /  9")  # {range(math.ceil(imagePoolSize / amount))}")
     if run == 0:
         pass  # we already selected samples randomly for this case
     else:
         sampler.selectSamples(amount=amount)
+    if len(sampler.trainImages) < (run+1) * amount - 1:  # -1 just in case there is a single one off error
+        sys.stderr.write("Too few images found")
+        sys.stderr.write(f"Found {len(sampler.trainImages)} images in training. Expected {(run+1) * amount}")
+        sys.stderr.write(f"currently in run {run}")
+        errors.append(f"In run {run} only found {len(sampler.trainImages)} images instead of {(run+1) * amount}")
     train.run()
     with open("log.txt", "a") as f:
         f.write(f"_done with run: {run+1}. Used {(run+1) * amount} images so far.\n")
+if errors:
+    sys.stderr.write(errors)
