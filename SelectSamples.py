@@ -257,6 +257,7 @@ class noiseSelector(SampleSelector):
 
 
         print("Selecting samples after applying noise to the samples:")
+        differences = []
         for path in tqdm(self.trainImagesPool):
             img = cv2.imread(path)
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -272,7 +273,6 @@ class noiseSelector(SampleSelector):
                 motion_blurred_image = corrupt(img, corruption_name="motion_blur", severity=3)
                 motion_boxes = yolo.predictFromLoadedImage(motion_blurred_image)
 
-            differences = []
             if self.mode == "gaussian_mean_difference":
                 difference = self.calc_confidence_difference(init_boxes, gaussian_boxes, "mean")
                 differences.append([difference[0], path])
