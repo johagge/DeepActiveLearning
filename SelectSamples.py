@@ -275,9 +275,10 @@ class noiseSelector(SampleSelector):
             differences = []
             if self.mode == "gaussian_mean_difference":
                 difference = self.calc_confidence_difference(init_boxes, gaussian_boxes, "mean")
-                differences.append([difference, path])
+                differences.append([difference[0], path])
 
         sorted_differences = np.sort(differences, axis=0)  # sort the list so we can take the first #amount items
+        print(f"There are {len(sorted_differences)} images in the sorted differences")
         # reverse list so we can just take the first #amount samples
         # this way the images with the biggest difference should be at the start
         sorted_differences = sorted_differences[::-1]
@@ -285,6 +286,8 @@ class noiseSelector(SampleSelector):
             self.trainImagesPool.remove(image[1])  # remove about to be labeled images from pool
             self.trainImages.append(image[1])
         self.writeSamplesToFile()
+        print(f"{len(self.trainImages)} used train images right now. \n"
+              f"{len(self.trainImagesPool)} images left in trainImagesPool")
         return self.trainImages, self.trainImagesPool
 
 
