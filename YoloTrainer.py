@@ -92,5 +92,5 @@ for run in range(10):  # range(math.ceil(imagePoolSize / amount)):
     train.run()
     with open("log.txt", "a") as f:
         f.write(f"_done with run: {run+1}. Used {(run+1) * amount} images so far.\n")
-if errors:
-    sys.stderr.write(errors)
+for error in errors:
+    sys.stderr.write(error)
