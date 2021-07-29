@@ -9,6 +9,7 @@ import cv2
 import numpy as np
 
 from tqdm import tqdm
+from mean_average_precision import MetricBuilder
 
 import yoloPredictor
 
@@ -276,6 +277,20 @@ class noiseSelector(SampleSelector):
             if self.mode == "gaussian_mean_difference":
                 difference = self.calc_confidence_difference(init_boxes, gaussian_boxes, "mean")
                 differences.append([difference[0], path])
+
+            if self.mode == "gaussian_map":
+                pass
+                # map library expects for ground truth:
+                # [xmin, ymin, xmax, ymax, class_id, difficult, crowd]
+                # pytorchyolo returns
+                # # [[x1, y1, x2, y2, confidence, class]]
+                # so we need to delete confidence and have class there
+                # and set 0, 0 for difficult and crowd
+
+                # map library expects for detection:
+                # [xmin, ymin, xmax, ymax, class_id, confidence]
+                # -> we need to swap class and confidence
+
 
         sorted_differences = np.sort(differences, axis=0)  # sort the list so we can take the first #amount items
         print(f"There are {len(sorted_differences)} images in the sorted differences")
