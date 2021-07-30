@@ -309,7 +309,8 @@ class noiseSelector(SampleSelector):
         print(f"There are {len(sorted_differences)} images in the sorted differences")
         # reverse list so we can just take the first #amount samples
         # this way the images with the biggest difference should be at the start
-        sorted_differences = sorted_differences[::-1]
+        if self.mode == "gaussian_mean_difference":
+            sorted_differences = sorted_differences[::-1]
         for image in sorted_differences[:amount]:
             self.trainImagesPool.remove(image[1])  # remove about to be labeled images from pool
             self.trainImages.append(image[1])
