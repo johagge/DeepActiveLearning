@@ -288,27 +288,21 @@ class noiseSelector(SampleSelector):
                 init_map = []
                 for pred in init_boxes:
                     minx, miny, maxx, maxy = self.min_and_max_xy_values(pred)
-                    init_map.append([minx, miny, maxx, maxy, pred[5], 0, 0])
+                    init_map.append([int(minx), int(miny), int(maxx), int(maxy), pred[5], 0, 0])
+                init_map = np.array(init_map)
                 # map library expects for detection:
                 # [xmin, ymin, xmax, ymax, class_id, confidence]
                 # -> we need to swap class and confidence
                 gauss_map = []
                 for pred in gaussian_boxes:
                     minx, miny, maxx, maxy = self.min_and_max_xy_values(pred)
-                    gauss_map.append([minx, miny, maxx, maxy, pred[5], pred[4]])
-                metric_fn = MetricBuilder.build_evaluation_metric("map_2d", async_mode=True,
+                    gauss_map.append([int(minx), int(miny), int(maxx), int(maxy), pred[5], pred[4]])
+                gauss_map = np.array(gauss_map)
+                metric_fn = MetricBuilder.build_evaluation_metric("map_2d", async_mode=False,
                                                                   num_classes=self.number_of_classes)
-                metric_fn.add(init_map, gauss_map)
+                metric_fn.add(gauss_map, init_map)
                 map_value = metric_fn.value(iou_thresholds=0.5)['mAP']
-                print(map_value)
-                print("init boxes:")
-                for e in init_map:
-                    print(e)
-                print("gauss boxes:")
-                for e in gauss_map:
-                    print(e)
-                sys.exit()
-                differences.append(map_value, path)
+                differences.append([map_value, path])
 
 
         sorted_differences = np.sort(differences, axis=0)  # sort the list so we can take the first #amount items
