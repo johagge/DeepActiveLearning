@@ -341,7 +341,7 @@ class noiseSelector(SampleSelector):
         """
         first_preds: initial predictions of neural network with no noise
         second_preds: predictions after noise was applied to the image
-        mode: select which values should be compared. options are: mean, median, max, min
+        mode: select which values should be compared. options are: mean. maybe in the future: median, max, min
         returns: mean of differences, list of differences
         """
         predictions = [first_preds, second_preds]
