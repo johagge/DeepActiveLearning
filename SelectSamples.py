@@ -1,3 +1,4 @@
+import sys
 from abc import ABC, abstractmethod
 import glob
 import os
@@ -277,19 +278,37 @@ class noiseSelector(SampleSelector):
             if self.mode == "gaussian_mean_difference":
                 difference = self.calc_confidence_difference(init_boxes, gaussian_boxes, "mean")
                 differences.append([difference[0], path])
-
-            if self.mode == "gaussian_map":
-                pass
+            elif self.mode == "gaussian_map_mean":
                 # map library expects for ground truth:
                 # [xmin, ymin, xmax, ymax, class_id, difficult, crowd]
                 # pytorchyolo returns
                 # # [[x1, y1, x2, y2, confidence, class]]
                 # so we need to delete confidence and have class there
                 # and set 0, 0 for difficult and crowd
-
+                init_map = []
+                for pred in init_boxes:
+                    minx, miny, maxx, maxy = self.min_and_max_xy_values(pred)
+                    init_map.append([minx, miny, maxx, maxy, pred[5], 0, 0])
                 # map library expects for detection:
                 # [xmin, ymin, xmax, ymax, class_id, confidence]
                 # -> we need to swap class and confidence
+                gauss_map = []
+                for pred in gaussian_boxes:
+                    minx, miny, maxx, maxy = self.min_and_max_xy_values(pred)
+                    gauss_map.append([minx, miny, maxx, maxy, pred[5], pred[4]])
+                metric_fn = MetricBuilder.build_evaluation_metric("map_2d", async_mode=True,
+                                                                  num_classes=self.number_of_classes)
+                metric_fn.add(init_map, gauss_map)
+                map_value = metric_fn.value(iou_thresholds=0.5)['mAP']
+                print(map_value)
+                print("init boxes:")
+                for e in init_map:
+                    print(e)
+                print("gauss boxes:")
+                for e in gauss_map:
+                    print(e)
+                sys.exit()
+                differences.append(map_value, path)
 
 
         sorted_differences = np.sort(differences, axis=0)  # sort the list so we can take the first #amount items
@@ -305,6 +324,18 @@ class noiseSelector(SampleSelector):
               f"{len(self.trainImagesPool)} images left in trainImagesPool")
         return self.trainImages, self.trainImagesPool
 
+
+    def min_and_max_xy_values(self, prediction):
+        """
+        This is probably unnecessary, but ensure that the order is correct
+        :param prediction: yolo prediction
+        :return: minx, miny, maxx, maxy
+        """
+        minx = min(prediction[0], prediction[2])
+        maxx = max(prediction[0], prediction[2])
+        miny = min(prediction[1], prediction[3])
+        maxy = max(prediction[1], prediction[3])
+        return minx, miny, maxx, maxy
 
     def calc_confidence_difference(self, first_preds, second_preds, mode):
         """
