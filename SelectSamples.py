@@ -268,7 +268,7 @@ class noiseSelector(SampleSelector):
             init_boxes = yolo.predict(path)
 
             # apply corruption
-            if self.mode == "gaussian_mean_difference":
+            if self.mode == "gaussian_mean_difference" or self.mode == "gaussian_map_mean":
                 gaussian_noised_image = corrupt(img, corruption_name="gaussian_noise", severity=1)
                 gaussian_boxes = yolo.predictFromLoadedImage(gaussian_noised_image)
             elif self.mode == "motion_mean_difference":
