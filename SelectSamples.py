@@ -271,14 +271,14 @@ class noiseSelector(SampleSelector):
             if self.mode == "gaussian_mean_difference" or self.mode == "gaussian_map_mean":
                 gaussian_noised_image = corrupt(img, corruption_name="gaussian_noise", severity=1)
                 gaussian_boxes = yolo.predictFromLoadedImage(gaussian_noised_image)
-            elif self.mode == "motion_mean_difference":
+            elif self.mode == "motion_mean_difference" or self.mode == "motion_blur_map_mean":
                 motion_blurred_image = corrupt(img, corruption_name="motion_blur", severity=3)
                 motion_boxes = yolo.predictFromLoadedImage(motion_blurred_image)
 
             if self.mode == "gaussian_mean_difference":
                 difference = self.calc_confidence_difference(init_boxes, gaussian_boxes, "mean")
                 differences.append([difference[0], path])
-            elif self.mode == "gaussian_map_mean":
+            elif self.mode == "gaussian_map_mean" or self.mode == "motion_blur_map_mean":
                 # map library expects for ground truth:
                 # [xmin, ymin, xmax, ymax, class_id, difficult, crowd]
                 # pytorchyolo returns
@@ -293,14 +293,24 @@ class noiseSelector(SampleSelector):
                 # map library expects for detection:
                 # [xmin, ymin, xmax, ymax, class_id, confidence]
                 # -> we need to swap class and confidence
-                gauss_map = []
-                for pred in gaussian_boxes:
-                    minx, miny, maxx, maxy = self.min_and_max_xy_values(pred)
-                    gauss_map.append([int(minx), int(miny), int(maxx), int(maxy), pred[5], pred[4]])
-                gauss_map = np.array(gauss_map)
+                if self.mode == "gaussian_map_mean":
+                    gauss_map = []
+                    for pred in gaussian_boxes:
+                        minx, miny, maxx, maxy = self.min_and_max_xy_values(pred)
+                        gauss_map.append([int(minx), int(miny), int(maxx), int(maxy), pred[5], pred[4]])
+                    gauss_map = np.array(gauss_map)
+                    noised_map = gauss_map
+                if self.mode  == "motion_blur_map_mean":
+                    motion_blur_map = []
+                    for pred in motion_boxes:
+                        minx, miny, maxx, maxy = self.min_and_max_xy_values(pred)
+                        motion_blur_map.append([int(minx), int(miny), int(maxx), int(maxy), pred[5], pred[4]])
+                    motion_blur_map = np.array(motion_blur_map)
+                    noised_map = motion_blur_map
+
                 metric_fn = MetricBuilder.build_evaluation_metric("map_2d", async_mode=False,
                                                                   num_classes=self.number_of_classes)
-                metric_fn.add(gauss_map, init_map)
+                metric_fn.add(noised_map, init_map)
                 map_value = metric_fn.value(iou_thresholds=0.5)['mAP']
                 differences.append([map_value, path])
 
