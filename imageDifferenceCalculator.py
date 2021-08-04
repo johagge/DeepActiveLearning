@@ -168,31 +168,10 @@ if __name__ == "__main__":
     # a.generate_all_image_vectors()
     a.images_by_cluster(10)
 
-    # skip currently unnecessary debug 
+    # skip currently unnecessary debug
     import sys
     sys.exit()
 
     # Visualization
     kmeans, reduced_data = a.cluster(10)
-    print(kmeans)
     a.visualizeCluster()
-
-    # images by cluster initial
-    print(kmeans.predict(reduced_data))  # returns assigned cluster for each value
-    images_by_cluster = [list() for e in range(a.amount_of_clusters)]  # one sub list for each defined cluster
-    for i, e in enumerate(reduced_data):
-        cluster = kmeans.predict(e.reshape(1, -1))
-        images_by_cluster[cluster[0]].append(a.image_list[i])  # put the image path into the fitting cluster list
-    for e in images_by_cluster:
-        print(len(e))
-
-    # Some tests to get a feel for how different images compare in one to one comparison
-    a = Image2Vector(["/home/jonas/Downloads/1076/1042-image00538.png", "/home/jonas/Downloads/1076/130-16_02_2018__11_16_34_0525_upper.png"])
-    img1 = a.load_image_pillow("/home/jonas/Downloads/1076/1042-image00538.png")
-    img2 = a.load_image_pillow("/home/jonas/Downloads/1076/130-16_02_2018__11_16_34_0525_upper.png")
-    img3 = a.load_image_pillow("/home/jonas/Downloads/1076/1042-image00007.png")
-    img4 = a.load_image_pillow("/home/jonas/Downloads/1076/1042-image00686.png")
-    a.calculate_for_two(img1, img1)
-    a.calculate_for_two(img1, img2)
-    a.calculate_for_two(img1, img3)
-    a.calculate_for_two(img1, img4)
