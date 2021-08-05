@@ -35,7 +35,7 @@ class Image2Vector(DifferenceCalculator):
 
     def __init__(self, image_list):
         super(Image2Vector, self).__init__(image_list)
-        self.img2vec = Img2Vec(cuda=False) # TODO set true
+        self.img2vec = Img2Vec(cuda=True) 
         self.vector_list = None
         self.pickle_name = "img2vec.pickle"
         self.amount_of_clusters = None
@@ -59,11 +59,13 @@ class Image2Vector(DifferenceCalculator):
 
     def generate_all_image_vectors(self):
         """
-        This generates the pickle file including all the vectors generated from the images
-        This saves a few minutes
-        Should only have to run this once.
+        This generates all the vectors generated from the images
+        On the workstation it takes about 2 minutes for all training images (~8900),
+        so it is not really necessary to save it.
+        (Otherwise we would want the vector and path in one list element to remove them after annotating)
         :return:
         """
+        # TODO select 512 automatically instead of hardcoding
         vector_list = np.zeros((len(self.image_list), 512))  # 512 because resnet-18 is used as default with 512 output
         print('generating image vectors...')
         for i, image in tqdm(enumerate(self.image_list)):
@@ -71,13 +73,13 @@ class Image2Vector(DifferenceCalculator):
             vector = self.img2vec.get_vec(img)
             vector_list[i, :] = vector
         self.vector_list = vector_list
-        with open(self.pickle_name, "wb") as f:
-            pickle.dump(vector_list, f)
+        #with open(self.pickle_name, "wb") as f:
+        #    pickle.dump(vector_list, f)
 
     def cluster(self, amount_clusters):
         # inspired by https://github.com/christiansafka/img2vec/blob/master/example/test_clustering.py
         self.amount_of_clusters = amount_clusters
-        self.load_results()
+        #self.load_results()
         print('Applying PCA...')
         reduced_data = PCA(n_components=2).fit_transform(self.vector_list)  # TODO try more than 2 components
         print('calculating kmeans')
@@ -136,8 +138,9 @@ class Image2Vector(DifferenceCalculator):
         #plt.savefig("kmeans.png", dpi=200)
 
     def images_by_cluster(self, amount_clusters):
+        self.amount_of_clusters = amount_clusters
         kmeans, reduced_data = self.cluster(amount_clusters)
-        images_by_cluster = [list() for e in range(a.amount_of_clusters)]  # one sub list for each defined cluster
+        images_by_cluster = [list() for e in range(self.amount_of_clusters)]  # one sub list for each defined cluster
         for i, e in enumerate(reduced_data):
             cluster = kmeans.predict(e.reshape(1, -1))
             # this assumes that the order of the reduced data is the same as the image list
@@ -156,7 +159,9 @@ if __name__ == "__main__":
     import glob
     # find all images in folder
     trainImagesPool = []
-    datasets = [x[0] for x in os.walk("/home/jonas/Downloads/1076/")]  # a list of all subdirectories (including root directory)
+    # datasets = [x[0] for x in os.walk("/home/jonas/Downloads/1076/")]  # a list of all subdirectories (including root directory)
+
+    datasets = [x[0] for x in os.walk("/srv/ssd_nvm/15hagge/torso-fuer-pytorchyolo/custom/images/train")]
 
     for d in datasets:
         trainImagesPool = glob.glob(f"{d}/*.png", recursive=True)
@@ -165,8 +170,11 @@ if __name__ == "__main__":
         trainImagesPool += glob.glob(f"{d}/*.JPG", recursive=True)
 
     a = Image2Vector(trainImagesPool)
-    # a.generate_all_image_vectors()
-    a.images_by_cluster(10)
+    a.generate_all_image_vectors()
+    img_by_cluster = a.images_by_cluster(10)
+    for e in img_by_cluster:
+        print(len(e))
+
 
     # skip currently unnecessary debug
     import sys

@@ -13,6 +13,7 @@ from tqdm import tqdm
 from mean_average_precision import MetricBuilder
 
 import yoloPredictor
+import imageDifferenceCalculator
 
 random.seed(42)  # make experiments repeatable
 
@@ -376,6 +377,52 @@ class noiseSelector(SampleSelector):
             # use absolute numbers, because we don't care which was more confident
             results.append(abs(confidences_by_class[0][i] - confidences_by_class[1][i]))
         return np.mean(results), results
+
+class DifferenceSampleSelector(SampleSelector):
+    """
+    Select samples by comparing them. No ground truth data is required.
+    """
+
+    def __init__(self, inputdir, outputdir, trainImages=None, trainImagesPool=None, mode=None):
+        super().__init__(inputdir, outputdir, trainImages=trainImages, trainImagesPool=trainImagesPool)
+        self.sampler = imageDifferenceCalculator.Image2Vector(trainImagesPool)
+
+    def selectSamples(self, amount=100):
+        """
+        selects samples from the pool
+        :param amount: amount of images to add to pool
+        :return: current train images, pool of remaining images
+        """
+        if amount > len(self.trainImagesPool):  # make sure this doesn't crash at the end
+            amount = len(self.trainImagesPool)
+        self.sampler.image_list = self.trainImagesPool
+        self.sampler.generate_all_image_vectors()
+        cluster_amount = 10
+        images_by_cluster = self.sampler.images_by_cluster(cluster_amount)
+
+        current_cluster = 0
+        added_images = 0
+        print("\n")
+        # TODO skip if cluster empty with a warning
+        while added_images < amount:
+            if len(images_by_cluster[current_cluster]) == 0:
+                print(f"No image found for cluster {current_cluster}")
+                current_cluster = (current_cluster + 1) % cluster_amount
+                continue
+            sample = random.choice(images_by_cluster[current_cluster])
+            self.trainImages.append(sample)
+            self.trainImagesPool.remove(sample)
+            images_by_cluster[current_cluster].remove(sample)
+
+            added_images += 1
+            current_cluster = (current_cluster + 1) % cluster_amount
+            print(f"Adding image {added_images}/{amount}", end='\r')
+        print("\n")
+
+        self.writeSamplesToFile()
+        return self.trainImages, self.trainImagesPool
+
+
 
 if __name__ == "__main__":
     a = RandomSampleSelector("/homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/data/custom/images",
