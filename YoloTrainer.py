@@ -94,6 +94,7 @@ for run in range(10):  # range(math.ceil(imagePoolSize / amount)):
     else:
         sampler.selectSamples(amount=amount)
     if len(sampler.trainImages) < (run+1) * amount - 1:  # -1 just in case there is a single one off error
+        # TODO verify length of actual train.txt file
         sys.stderr.write("Too few images found")
         sys.stderr.write(f"Found {len(sampler.trainImages)} images in training. Expected {(run+1) * amount}")
         sys.stderr.write(f"currently in run {run}")
