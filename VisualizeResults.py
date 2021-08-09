@@ -31,7 +31,7 @@ for key, value in results.items():
 ax.legend()
 plt.xlim(100, 1000)
 plt.ylim(0, 1)
-plt.xlabel("amount of images used in training")
+plt.xlabel("number of images used in training")
 plt.ylabel("mAP on test data")
 plt.show()
 fig.savefig("graph.png", dpi=200)
