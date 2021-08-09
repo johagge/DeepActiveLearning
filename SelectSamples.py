@@ -394,17 +394,17 @@ class DifferenceSampleSelector(SampleSelector):
         super().__init__(inputdir, outputdir, trainImages=trainImages, trainImagesPool=trainImagesPool)
         self.sampler = imageDifferenceCalculator.Image2Vector(trainImagesPool)
 
-    def selectSamples(self, amount=100):
+    def selectSamples(self, amount=100, cluster_amount=10):
         """
         selects samples from the pool
         :param amount: amount of images to add to pool
+        :param cluster_amount: split input images into how many cluster?
         :return: current train images, pool of remaining images
         """
         if amount > len(self.trainImagesPool):  # make sure this doesn't crash at the end
             amount = len(self.trainImagesPool)
         self.sampler.image_list = self.trainImagesPool
         self.sampler.generate_all_image_vectors()
-        cluster_amount = 10
         images_by_cluster = self.sampler.images_by_cluster(cluster_amount)
 
         current_cluster = 0

@@ -27,6 +27,7 @@ args += "--evaluation_interval 25".split(" ")
 sys.argv = args  # overwrite sys argv with new arguments
 
 amount = 100
+cluster_amount = 10
 inputdir = "/srv/ssd_nvm/15hagge/torso-fuer-pytorchyolo/custom/images/train"
 outputdir = "/homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/data/"
 
