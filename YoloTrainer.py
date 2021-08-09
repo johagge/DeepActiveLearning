@@ -4,6 +4,8 @@ from pytorchyolo import train
 import SelectSamples as samples
 import argparse
 
+import imageDifferenceCalculator
+
 parser = argparse.ArgumentParser(description="Trains a YOLO and selects the most helpful samples for annotating")
 parser.add_argument("-m", "--mode", type=str, help="Mode to select samples, e.g. 'random'")
 
@@ -32,6 +34,11 @@ outputdir = "/homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/data/"
 # Generate the first samples randomly assuming we have no suitable heuristic for the first ones
 firstSampler = samples.RandomSampleSelector(inputdir, outputdir)
 firstSamples = firstSampler.selectSamples(amount=amount)  # these are used for run 0 of the training
+
+# Remove cluster from mode, as is it is irrelevant for choice of sampler here
+full_mode = trainer_args.mode
+if "cluster" in trainer_args.mode:
+    trainer_args.mode.replace("_cluster", "")
 
 if trainer_args.mode == "mean_confidence":
     sampler = samples.meanConfidenceSelector(inputdir, outputdir, trainImages=firstSamples[0],
@@ -91,8 +98,34 @@ for run in range(10):  # range(math.ceil(imagePoolSize / amount)):
     print(f"___currently running {run} /  9")  # {range(math.ceil(imagePoolSize / amount))}")
     if run == 0:
         pass  # we already selected samples randomly for this case
-    else:
+    elif not "cluster" in full_mode:
         sampler.selectSamples(amount=amount)
+    else:  # use clusters for diversity sampling
+        # 1. split train pool into clusters
+        # 2. for cluster in clusters: use normal sampler
+        # 3. write to train.txt
+        if not (amount / cluster_amount) % 0 == 0:
+            sys.exit("amount of images should be divisible by cluster amount")
+        if run == 1:  # we need the train images pool from run 0
+            clusterizer = imageDifferenceCalculator.Image2Vector(image_list=firstSamples[1])
+        else:
+            clusterizer = imageDifferenceCalculator.Image2Vector(image_list=train_images_pool)
+        clusterizer.generate_all_image_vectors()
+        images_by_cluster = clusterizer.images_by_cluster(cluster_amount)
+
+        previous_train_images_pool = sampler.trainImagesPool.copy()
+        train_images = sampler.trainImages.copy()
+
+        for cluster in images_by_cluster:
+            sampler.trainImagesPool = cluster
+            _, _, new_train_images = sampler.selectSamples(amount=amount/cluster_amount)
+            train_images.extend(new_train_images)
+
+        train_images_pool = set(previous_train_images_pool) - set(train_images)
+        sampler.trainImages = train_images
+        sampler.writeSamplesToFile()
+
+
     if len(sampler.trainImages) < (run+1) * amount - 1:  # -1 just in case there is a single one off error
         # TODO verify length of actual train.txt file
         sys.stderr.write("Too few images found")

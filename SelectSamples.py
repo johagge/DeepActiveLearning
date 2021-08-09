@@ -112,7 +112,7 @@ class RandomSampleSelector(SampleSelector):
             self.trainImagesPool = [] # there are no images left
         # self.copyFiles(selectedSamples)
         self.writeSamplesToFile()
-        return self.trainImages, self.trainImagesPool
+        return self.trainImages, self.trainImagesPool, selectedSamples
 
 class meanConfidenceSelector(SampleSelector):
     """
@@ -186,11 +186,13 @@ class meanConfidenceSelector(SampleSelector):
         if self.mode == "max":
             # reverse the list, now the highest predictions are at the start of the list
             sortedPredictions = sortedPredictions[::-1]
+        new_train_images = []
         for image in sortedPredictions[:amount]:
             self.trainImagesPool.remove(image[1])  # remove about to be labeled images from pool
             self.trainImages.append(image[1])
+            new_train_images.append(image[1])
         self.writeSamplesToFile()
-        return self.trainImages, self.trainImagesPool
+        return self.trainImages, self.trainImagesPool, new_train_images
 
 
 class BoundingBoxAmountSelector(SampleSelector):
@@ -223,18 +225,21 @@ class BoundingBoxAmountSelector(SampleSelector):
             length = len(boxes)
             predictionConfidences.append([length, path])
 
+        new_train_images = []
         sortedPredictions = sorted(predictionConfidences)  # sort the list so we can take the first #amount items
         if self.mode == "least":
             for image in sortedPredictions[:amount]:
                 self.trainImagesPool.remove(image[1])  # remove about to be labeled images from pool
                 self.trainImages.append(image[1])
+                new_train_images.append(image[1])
         if self.mode == "most":
             for image in sortedPredictions[len(sortedPredictions)-amount:]:
                 self.trainImagesPool.remove(image[1])  # remove about to be labeled images from pool
                 self.trainImages.append(image[1])
+                new_train_images.append(image[1])
 
         self.writeSamplesToFile()
-        return self.trainImages, self.trainImagesPool
+        return self.trainImages, self.trainImagesPool, new_train_images
 
 class noiseSelector(SampleSelector):
     """"
@@ -322,13 +327,15 @@ class noiseSelector(SampleSelector):
         # this way the images with the biggest difference should be at the start
         if self.mode == "gaussian_mean_difference":
             sorted_differences = sorted_differences[::-1]
+        new_train_images = []
         for image in sorted_differences[:amount]:
             self.trainImagesPool.remove(image[1])  # remove about to be labeled images from pool
             self.trainImages.append(image[1])
+            new_train_images.append(image[1])
         self.writeSamplesToFile()
         print(f"{len(self.trainImages)} used train images right now. \n"
               f"{len(self.trainImagesPool)} images left in trainImagesPool")
-        return self.trainImages, self.trainImagesPool
+        return self.trainImages, self.trainImagesPool, new_train_images
 
 
     def min_and_max_xy_values(self, prediction):
@@ -404,6 +411,7 @@ class DifferenceSampleSelector(SampleSelector):
         added_images = 0
         print("\n")
         # TODO skip if cluster empty with a warning
+        new_train_images = []
         while added_images < amount:
             if len(images_by_cluster[current_cluster]) == 0:
                 print(f"No image found for cluster {current_cluster}")
@@ -411,6 +419,7 @@ class DifferenceSampleSelector(SampleSelector):
                 continue
             sample = random.choice(images_by_cluster[current_cluster])
             self.trainImages.append(sample)
+            new_train_images.append(sample)
             self.trainImagesPool.remove(sample)
             images_by_cluster[current_cluster].remove(sample)
 
@@ -420,7 +429,7 @@ class DifferenceSampleSelector(SampleSelector):
         print("\n")
 
         self.writeSamplesToFile()
-        return self.trainImages, self.trainImagesPool
+        return self.trainImages, self.trainImagesPool, new_train_images
 
 
 
