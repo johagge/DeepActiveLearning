@@ -119,7 +119,7 @@ for run in range(10):  # range(math.ceil(imagePoolSize / amount)):
 
         for cluster in images_by_cluster:
             sampler.trainImagesPool = cluster
-            _, _, new_train_images = sampler.selectSamples(amount=amount/cluster_amount)
+            _, _, new_train_images = sampler.selectSamples(amount=int(amount/cluster_amount))
             train_images.extend(new_train_images)
 
         train_images_pool = set(previous_train_images_pool) - set(train_images)
