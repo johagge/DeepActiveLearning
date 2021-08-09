@@ -121,7 +121,7 @@ for run in range(10):  # range(math.ceil(imagePoolSize / amount)):
             _, _, new_train_images = sampler.selectSamples(amount=int(amount/cluster_amount))
             # train_images.extend(new_train_images)
 
-        train_images_pool = set(previous_train_images_pool) - set(sampler.train_images)
+        train_images_pool = set(previous_train_images_pool) - set(sampler.trainImages)
         # sampler.trainImages = train_images
         sampler.writeSamplesToFile()
 
