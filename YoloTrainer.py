@@ -39,7 +39,7 @@ firstSamples = firstSampler.selectSamples(amount=amount)  # these are used for r
 # Remove cluster from mode, as is it is irrelevant for choice of sampler here
 full_mode = trainer_args.mode
 if "cluster" in trainer_args.mode:
-    trainer_args.mode.replace("_cluster", "")
+    trainer_args.mode = trainer_args.mode.replace("_cluster", "")
 
 if trainer_args.mode == "mean_confidence":
     sampler = samples.meanConfidenceSelector(inputdir, outputdir, trainImages=firstSamples[0],
@@ -105,7 +105,7 @@ for run in range(10):  # range(math.ceil(imagePoolSize / amount)):
         # 1. split train pool into clusters
         # 2. for cluster in clusters: use normal sampler
         # 3. write to train.txt
-        if not (amount / cluster_amount) % 0 == 0:
+        if not amount % cluster_amount == 0:
             sys.exit("amount of images should be divisible by cluster amount")
         if run == 1:  # we need the train images pool from run 0
             clusterizer = imageDifferenceCalculator.Image2Vector(image_list=firstSamples[1])
