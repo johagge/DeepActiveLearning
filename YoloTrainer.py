@@ -104,7 +104,6 @@ for run in range(10):  # range(math.ceil(imagePoolSize / amount)):
     else:  # use clusters for diversity sampling
         # 1. split train pool into clusters
         # 2. for cluster in clusters: use normal sampler
-        # 3. write to train.txt
         if not amount % cluster_amount == 0:
             sys.exit("amount of images should be divisible by cluster amount")
         if run == 1:  # we need the train images pool from run 0
@@ -115,15 +114,15 @@ for run in range(10):  # range(math.ceil(imagePoolSize / amount)):
         images_by_cluster = clusterizer.images_by_cluster(cluster_amount)
 
         previous_train_images_pool = sampler.trainImagesPool.copy()
-        train_images = sampler.trainImages.copy()
+        # train_images = sampler.trainImages.copy()
 
         for cluster in images_by_cluster:
             sampler.trainImagesPool = cluster
             _, _, new_train_images = sampler.selectSamples(amount=int(amount/cluster_amount))
-            train_images.extend(new_train_images)
+            # train_images.extend(new_train_images)
 
-        train_images_pool = set(previous_train_images_pool) - set(train_images)
-        sampler.trainImages = train_images
+        train_images_pool = set(previous_train_images_pool) - set(sampler.train_images)
+        # sampler.trainImages = train_images
         sampler.writeSamplesToFile()
 
 
