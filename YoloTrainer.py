@@ -115,16 +115,14 @@ for run in range(10):  # range(math.ceil(imagePoolSize / amount)):
 
         # by copying it from the sampler we don't have the if/else we need otherwise for the first run
         previous_train_images_pool = sampler.trainImagesPool.copy()
-        # train_images = sampler.trainImages.copy()
+
         for cluster in images_by_cluster:
             sampler.trainImagesPool = cluster
             _, _, new_train_images = sampler.selectSamples(amount=int(amount/cluster_amount))
-            # train_images.extend(new_train_images)
 
         train_images_pool = set(previous_train_images_pool) - set(sampler.trainImages)
         print(f"There are {len(train_images_pool)} images left in the pool")
         train_images_pool = list(train_images_pool)
-        # since we copy the train images pool from the sampler, we also have to set it here
         sampler.trainImagesPool = train_images_pool
 
         sampler.writeSamplesToFile()
