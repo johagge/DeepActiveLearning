@@ -89,7 +89,7 @@ if os.path.isfile("log.txt"):
     sys.exit("Logfile already exists.")
 
 with open("log.txt", "a") as f:
-    f.write(f"{trainer_args.mode}\n")
+    f.write(f"{full_mode}\n")
 
 imagePoolSize = len(sampler.trainImagesPool)
 
