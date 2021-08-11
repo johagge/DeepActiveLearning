@@ -2,6 +2,7 @@ import csv
 import glob
 import os
 import matplotlib.pyplot as plt
+import numpy as np
 
 # TODO alternatively use only files specified via command line
 
@@ -33,5 +34,16 @@ plt.xlim(100, 1000)
 plt.ylim(0, 1)
 plt.xlabel("number of images used in training")
 plt.ylabel("mAP on test data")
-plt.show()
-fig.savefig("graph.png", dpi=200)
+
+# use different colors, because otherwise the colors are reused
+colormap = plt.cm.gist_ncar  # nipy_spectral, Set1,Paired
+# only up to 0.9, because 1 is almost white and hard to see
+colors = [colormap(i) for i in np.linspace(0, 0.9, len(ax.lines))]
+for i, j in enumerate(ax.lines):
+    j.set_color(colors[i])
+
+plt.show(dpi=200)
+# put the legend outside of graph
+# do it after showing the figure, because for some reason the bbox inches tight only works in savefig
+ax.legend(bbox_to_anchor=(1, 1))
+fig.savefig("graph.png", dpi=200, bbox_inches='tight')
