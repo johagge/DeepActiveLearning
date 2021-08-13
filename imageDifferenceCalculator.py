@@ -81,7 +81,7 @@ class Image2Vector(DifferenceCalculator):
         self.amount_of_clusters = amount_clusters
         #self.load_results()
         print('Applying PCA...')
-        reduced_data = PCA(n_components=2).fit_transform(self.vector_list)  # TODO try more than 2 components
+        reduced_data = PCA(n_components=300).fit_transform(self.vector_list)
         print('calculating kmeans')
         kmeans = KMeans(init='k-means++', n_clusters=amount_clusters, n_init=25)
         kmeans.fit(reduced_data)
