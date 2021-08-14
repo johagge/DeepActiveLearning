@@ -39,8 +39,8 @@ firstSamples = firstSampler.selectSamples(amount=amount)  # these are used for r
 # Remove cluster from mode, as is it is irrelevant for choice of sampler here
 full_mode = trainer_args.mode
 if "cluster" in trainer_args.mode:
-    trainer_args.mode = trainer_args.mode.replace("_cluster", "")
     trainer_args.mode = trainer_args.mode.replace("_cluster300", "")
+    trainer_args.mode = trainer_args.mode.replace("_cluster", "")
 
 if trainer_args.mode == "mean_confidence":
     sampler = samples.meanConfidenceSelector(inputdir, outputdir, trainImages=firstSamples[0],
