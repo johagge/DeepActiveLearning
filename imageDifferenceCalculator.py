@@ -147,11 +147,14 @@ class Image2Vector(DifferenceCalculator):
             images_by_cluster[cluster[0]].append(self.image_list[i])  # put the image path into the fitting cluster list
         return images_by_cluster
 
-    # TODO remember to delete selected samples from
-    #       self.reduced_data = None
-    #       self.vector_list = None
-    #       self.image_list = image_list
-    # TODO delete cluster and cluster again after each run
+
+class Vae(DifferenceCalculator):
+    def __init__(self,image_list, pickle_file="embeddings.pickle"):
+        super(Vae, self).__init__(image_list)
+        with open(pickle_file, "rb") as f:
+            self.embeddings = pickle.load(f)
+        self.latent = self.embeddings["latent"]
+
 
 
 if __name__ == "__main__":
