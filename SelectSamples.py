@@ -15,7 +15,6 @@ from mean_average_precision import MetricBuilder
 import yoloPredictor
 import imageDifferenceCalculator
 
-random.seed(42)  # make experiments repeatable
 
 class SampleSelector(ABC):
     """Abstract class to select samples"""
@@ -27,6 +26,9 @@ class SampleSelector(ABC):
         :param outputdir: where list of selected images is located
         :param trainImagesPool: if a training pool has already been created, it can be reused here
         """
+
+        random.seed(42)  # make experiments repeatable
+
         self.inputdir = inputdir
         self.outputdir = outputdir
 
