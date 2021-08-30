@@ -8,6 +8,7 @@ import imageDifferenceCalculator
 
 parser = argparse.ArgumentParser(description="Trains a YOLO and selects the most helpful samples for annotating")
 parser.add_argument("-m", "--mode", type=str, help="Mode to select samples, e.g. 'random'")
+parser.add_argument("-s", "--seed", type=int, help="Seed to use for the sampler") # todo empty == 42
 
 trainer_args = parser.parse_args()
 
@@ -20,7 +21,7 @@ args += "--model /homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/config/robocup
 args += "--data /homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/data/robocup.data".split(" ")
 args += "--epochs 201".split(" ")  # as the numbers are zero indexed, this provides evaluation results of the 200th run
 args += "--pretrained_weights /homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/weights/yolov4-tiny.conv.29".split(" ")
-args += "--seed 42".split(" ")
+args += f"--seed {trainer_args.seed}".split(" ")
 args += "--n_cpu 4".split(" ")
 args += "--evaluation_interval 25".split(" ")
 
@@ -33,7 +34,7 @@ outputdir = "/homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/data/"
 
 
 # Generate the first samples randomly assuming we have no suitable heuristic for the first ones
-firstSampler = samples.RandomSampleSelector(inputdir, outputdir)
+firstSampler = samples.RandomSampleSelector(inputdir, outputdir, seed=trainer_args.seed)
 firstSamples = firstSampler.selectSamples(amount=amount)  # these are used for run 0 of the training
 
 # Remove cluster from mode, as is it is irrelevant for choice of sampler here
@@ -44,43 +45,46 @@ if "cluster" in trainer_args.mode:
 
 if trainer_args.mode == "mean_confidence":
     sampler = samples.meanConfidenceSelector(inputdir, outputdir, trainImages=firstSamples[0],
-                                             trainImagesPool=firstSamples[1], mode="mean")
+                                             trainImagesPool=firstSamples[1], mode="mean", seed=trainer_args.seed)
 elif trainer_args.mode == "mean_confidence_no_boxes":
     sampler = samples.meanConfidenceSelector(inputdir, outputdir, trainImages=firstSamples[0],
-                                             trainImagesPool=firstSamples[1], mode="mean_with_no_boxes")
+                                             trainImagesPool=firstSamples[1], mode="mean_with_no_boxes",
+                                             seed=trainer_args.seed)
 elif trainer_args.mode == "min_confidence":
     sampler = samples.meanConfidenceSelector(inputdir, outputdir, trainImages=firstSamples[0],
-                                             trainImagesPool=firstSamples[1], mode="min")
+                                             trainImagesPool=firstSamples[1], mode="min", seed=trainer_args.seed)
 elif trainer_args.mode == "lowest_max_confidence":
     sampler = samples.meanConfidenceSelector(inputdir, outputdir, trainImages=firstSamples[0],
-                                             trainImagesPool=firstSamples[1], mode="lowest_max")
+                                             trainImagesPool=firstSamples[1], mode="lowest_max", seed=trainer_args.seed)
 elif trainer_args.mode == "median":
     sampler = samples.meanConfidenceSelector(inputdir, outputdir, trainImages=firstSamples[0],
-                                             trainImagesPool=firstSamples[1], mode="median")
+                                             trainImagesPool=firstSamples[1], mode="median", seed=trainer_args.seed)
 elif trainer_args.mode == "max":
     sampler = samples.meanConfidenceSelector(inputdir, outputdir, trainImages=firstSamples[0],
-                                             trainImagesPool=firstSamples[1], mode="max")
+                                             trainImagesPool=firstSamples[1], mode="max", seed=trainer_args.seed)
 elif trainer_args.mode == "random":
     sampler = samples.RandomSampleSelector(inputdir, outputdir, trainImages=firstSamples[0],
-                                           trainImagesPool=firstSamples[1])
+                                           trainImagesPool=firstSamples[1], seed=trainer_args.seed)
 elif trainer_args.mode == "min_bb":
     sampler = samples.BoundingBoxAmountSelector(inputdir, outputdir, trainImages=firstSamples[0],
-                                                trainImagesPool=firstSamples[1], mode="least")
+                                                trainImagesPool=firstSamples[1], mode="least", seed=trainer_args.seed)
 elif trainer_args.mode == "most_bb":
     sampler = samples.BoundingBoxAmountSelector(inputdir, outputdir, trainImages=firstSamples[0],
-                                                trainImagesPool=firstSamples[1], mode="most")
+                                                trainImagesPool=firstSamples[1], mode="most", seed=trainer_args.seed)
 elif trainer_args.mode == "gaussian_mean_difference":
     sampler = samples.noiseSelector(inputdir, outputdir, trainImages=firstSamples[0],
-                                    trainImagesPool=firstSamples[1], mode="gaussian_mean_difference")
+                                    trainImagesPool=firstSamples[1], mode="gaussian_mean_difference",
+                                    seed=trainer_args.seed)
 elif trainer_args.mode == "gaussian_map_mean":
     sampler = samples.noiseSelector(inputdir, outputdir, trainImages=firstSamples[0],
-                                    trainImagesPool=firstSamples[1], mode="gaussian_map_mean")
+                                    trainImagesPool=firstSamples[1], mode="gaussian_map_mean", seed=trainer_args.seed)
 elif trainer_args.mode == "motion_blur_map_mean":
     sampler = samples.noiseSelector(inputdir, outputdir, trainImages=firstSamples[0],
-                                    trainImagesPool=firstSamples[1], mode="motion_blur_map_mean")
+                                    trainImagesPool=firstSamples[1], mode="motion_blur_map_mean",
+                                    seed=trainer_args.seed)
 elif trainer_args.mode == "image_2_vec_resnet":
     sampler = samples.DifferenceSampleSelector(inputdir, outputdir, trainImages=firstSamples[0],
-                                               trainImagesPool=firstSamples[1], mode="resnet")
+                                               trainImagesPool=firstSamples[1], mode="resnet", seed=trainer_args.seed)
 else:
     sys.exit("No or incorrect mode was provided")
 

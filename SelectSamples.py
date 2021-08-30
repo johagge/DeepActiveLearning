@@ -19,7 +19,7 @@ import imageDifferenceCalculator
 class SampleSelector(ABC):
     """Abstract class to select samples"""
 
-    def __init__(self, inputdir, outputdir, trainImages=None, trainImagesPool=None):
+    def __init__(self, inputdir, outputdir, trainImages=None, trainImagesPool=None, seed=42):
         """
 
         :param inputdir: directory with images to choose from
@@ -27,7 +27,8 @@ class SampleSelector(ABC):
         :param trainImagesPool: if a training pool has already been created, it can be reused here
         """
 
-        random.seed(42)  # make experiments repeatable
+        random.seed(seed)  # make experiments repeatable
+        print(f"using seed {seed}")
 
         self.inputdir = inputdir
         self.outputdir = outputdir
@@ -89,8 +90,8 @@ class RandomSampleSelector(SampleSelector):
     This is the baseline to compare other approaches to.
     """
 
-    def __init__(self, inputdir, outputdir, trainImages=None, trainImagesPool=None):
-        super().__init__(inputdir, outputdir, trainImages=trainImages, trainImagesPool=trainImagesPool )
+    def __init__(self, inputdir, outputdir, trainImages=None, trainImagesPool=None, seed=42):
+        super().__init__(inputdir, outputdir, trainImages=trainImages, trainImagesPool=trainImagesPool, seed=seed)
 
     def selectSamples(self, amount=100):
         """
@@ -126,8 +127,8 @@ class meanConfidenceSelector(SampleSelector):
             at first ignore them, use them later to prevent false negatives?
     """
 
-    def __init__(self, inputdir, outputdir, trainImages=None, trainImagesPool=None, mode="mean"):
-        super().__init__(inputdir, outputdir, trainImages=trainImages, trainImagesPool=trainImagesPool )
+    def __init__(self, inputdir, outputdir, trainImages=None, trainImagesPool=None, mode="mean", seed=42):
+        super().__init__(inputdir, outputdir, trainImages=trainImages, trainImagesPool=trainImagesPool, seed=seed)
         # we can't load the weights here, because we need new ones after the next training
         self.mode = mode
 
@@ -202,8 +203,8 @@ class BoundingBoxAmountSelector(SampleSelector):
     Select the samples which had the most or least bounding box predictions
     """
 
-    def __init__(self, inputdir, outputdir,trainImages=None, trainImagesPool=None, mode="most"):
-        super().__init__(inputdir, outputdir, trainImages=trainImages, trainImagesPool=trainImagesPool )
+    def __init__(self, inputdir, outputdir,trainImages=None, trainImagesPool=None, mode="most", seed=42):
+        super().__init__(inputdir, outputdir, trainImages=trainImages, trainImagesPool=trainImagesPool,seed=seed)
         # we can't load the weights here, because we need new ones after the next training
         self.mode = mode
 
@@ -249,8 +250,8 @@ class noiseSelector(SampleSelector):
     The intuition is that a large difference in prediction means uncertain initial prediction
     """
 
-    def __init__(self, inputdir, outputdir,trainImages=None, trainImagesPool=None, mode=""):
-        super().__init__(inputdir, outputdir, trainImages=trainImages, trainImagesPool=trainImagesPool )
+    def __init__(self, inputdir, outputdir,trainImages=None, trainImagesPool=None, mode="", seed=42):
+        super().__init__(inputdir, outputdir, trainImages=trainImages, trainImagesPool=trainImagesPool, seed=seed)
         self.mode = mode
         self.number_of_classes = 6
 
@@ -392,8 +393,8 @@ class DifferenceSampleSelector(SampleSelector):
     Select samples by comparing them. No ground truth data is required.
     """
 
-    def __init__(self, inputdir, outputdir, trainImages=None, trainImagesPool=None, mode=None):
-        super().__init__(inputdir, outputdir, trainImages=trainImages, trainImagesPool=trainImagesPool)
+    def __init__(self, inputdir, outputdir, trainImages=None, trainImagesPool=None, mode=None, seed=42):
+        super().__init__(inputdir, outputdir, trainImages=trainImages, trainImagesPool=trainImagesPool, seed=seed)
         self.sampler = imageDifferenceCalculator.Image2Vector(trainImagesPool)
 
     def selectSamples(self, amount=100, cluster_amount=10):
