@@ -6,7 +6,7 @@ import numpy as np
 
 # TODO alternatively use only files specified via command line
 
-logdir = "log"
+logdir = "log10"
 
 files = glob.glob(os.path.join(logdir, "*.txt"))
 print(files)
@@ -27,10 +27,12 @@ for file in files:
 
 fig, ax = plt.subplots()
 used_images = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
+used_images = np.array(used_images)
+used_images = used_images / 10
 for key, value in results.items():
     ax.plot(used_images, value, "-o", label=key)
 ax.legend()
-plt.xlim(100, 1000)
+plt.xlim(used_images[0], used_images[-1])  # use first and last element of used images as scale for x
 plt.ylim(0, 1)
 plt.xlabel("number of images used in training")
 plt.ylabel("mAP on test data")
