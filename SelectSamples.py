@@ -434,7 +434,70 @@ class DifferenceSampleSelector(SampleSelector):
         self.writeSamplesToFile()
         return self.trainImages, self.trainImagesPool, new_train_images
 
+class VAEBasedSelector(SampleSelector):
+    """
+    Select samples by checking the VAE values. No ground truth data is required.
+    """
 
+    def __init__(self, inputdir, outputdir, trainImages=None, trainImagesPool=None, mode=None, seed=42):
+        super().__init__(inputdir, outputdir, trainImages=trainImages, trainImagesPool=trainImagesPool, seed=seed)
+        self.sampler = imageDifferenceCalculator.Vae(trainImagesPool)
+
+    def selectSamples(self, amount=100):
+        """
+        selects samples from the pool
+        :param amount: amount of images to add to pool
+        :param cluster_amount: split input images into how many cluster?
+        :return: current train images, pool of remaining images
+        """
+        if amount > len(self.trainImagesPool):  # make sure this doesn't crash at the end
+            amount = len(self.trainImagesPool)
+        self.sampler.image_list = self.trainImagesPool # TODO
+        new_train_images = []
+
+        # using integer division to safeguard cases where % 10 !=0
+        error_images_amount = amount // 10
+        difference_images_amount = amount - error_images_amount
+
+        high_error = self.sampler.get_high_error_samples()
+        while len(new_train_images) < difference_images_amount:
+            new_train_images.append(random.choice(high_error))
+
+        # loop pseudo code:
+        # call with x distance
+        # check length after discarding images not in imagespool
+        #   take x samples randomly (or run again with larger distance?)
+        #   redo with smaller distance if too short
+        latent_distance = 30
+        while True:
+            # ensure this doesn't go into an endless loop
+            if latent_distance <= 0:
+                high_difference = self.trainImagesPool
+                print()
+                print("VAE selection discarded, because we had to use a distance of 0")
+                print()
+                break
+            high_difference = self.sampler.get_very_different_samples(latent_distance_to_prune=latent_distance)
+
+            # discard images that are not in the pool
+            # TODO test this
+            for sample in high_difference:
+                if sample not in self.trainImagesPool:
+                    high_difference.remove(sample)
+
+            if len(high_difference) < amount:
+                latent_distance -= 5
+            else:
+                break
+        while len(new_train_images) < amount:
+            new_train_images.append(random.choice(high_difference))
+
+        self.trainImages.extend(new_train_images)
+        for sample in new_train_images:
+            self.trainImagesPool.remove(sample)
+
+        self.writeSamplesToFile()
+        return self.trainImages, self.trainImagesPool, new_train_images
 
 if __name__ == "__main__":
     a = RandomSampleSelector("/homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/data/custom/images",

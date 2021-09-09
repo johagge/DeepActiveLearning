@@ -149,12 +149,38 @@ class Image2Vector(DifferenceCalculator):
 
 
 class Vae(DifferenceCalculator):
-    def __init__(self,image_list, pickle_file="embeddings.pickle"):
+    def __init__(self, image_list, pickle_file="embeddings.pickle"):
         super(Vae, self).__init__(image_list)
         with open(pickle_file, "rb") as f:
             self.embeddings = pickle.load(f)
         self.latent = self.embeddings["latent"]
+        self.paths = self.embeddings["path_list"]
+        self.tree = self.embeddings["tree"]
+        self.errors = self.embeddings["errors"]
 
+    def get_high_error_samples(self):
+        errors = self.errors
+
+        # using the 1.64 value as in TORSO-21
+        error_threshold = errors.mean() + errors.std() * 1.64
+        not_recreatable = set([self.paths[i] for i in np.where(errors >= error_threshold)[0]])
+        return not_recreatable
+
+    def get_very_different_samples(self, latent_distance_to_prune=30):
+        temp_paths = self.paths.copy()
+        high_difference_samples = []
+        while len(temp_paths) > 0:
+            sample = temp_paths.pop()
+
+            high_difference_samples.append(sample)
+            # use self.paths, not temp_paths, to keep the indexing right
+            sample_id = self.paths.index(sample)
+            indices = self.tree.query_radius(self.latent[sample_id].reshape(1, -1), r=latent_distance_to_prune)[0]
+            for index in indices:
+                if self.paths[index] in temp_paths:
+                    # find object in self.paths and then remove it from the temp list
+                    temp_paths.remove((self.paths[index]))
+        return high_difference_samples
 
 
 if __name__ == "__main__":
@@ -171,7 +197,7 @@ if __name__ == "__main__":
         trainImagesPool += glob.glob(f"{d}/*.PNG", recursive=True)
         trainImagesPool += glob.glob(f"{d}/*.jpg", recursive=True)
         trainImagesPool += glob.glob(f"{d}/*.JPG", recursive=True)
-
+    """
     a = Image2Vector(trainImagesPool)
     a.generate_all_image_vectors()
     img_by_cluster = a.images_by_cluster(10)
@@ -186,3 +212,6 @@ if __name__ == "__main__":
     # Visualization
     kmeans, reduced_data = a.cluster(10)
     a.visualizeCluster()
+    """
+    a = Vae(trainImagesPool)
+    a.get_very_different_samples()
