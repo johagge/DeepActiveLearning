@@ -85,6 +85,9 @@ elif trainer_args.mode == "motion_blur_map_mean":
 elif trainer_args.mode == "image_2_vec_resnet":
     sampler = samples.DifferenceSampleSelector(inputdir, outputdir, trainImages=firstSamples[0],
                                                trainImagesPool=firstSamples[1], mode="resnet", seed=trainer_args.seed)
+elif trainer_args.mode == "vae":
+    sampler = samples.VAEBasedSelector(inputdir, outputdir, trainImages=firstSamples[0],
+                                       trainImagesPool=firstSamples[1], mode=None, seed=trainer_args.seed)
 else:
     sys.exit("No or incorrect mode was provided")
 
