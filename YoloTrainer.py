@@ -19,6 +19,7 @@ trainer_args = parser.parse_args()
 args = [sys.argv[0]]  # put python filename in sys.argv
 args += "--model /homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/config/robocup.cfg".split(" ")
 args += "--data /homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/data/robocup.data".split(" ")
+# epochs are n+1 until https://github.com/eriklindernoren/PyTorch-YOLOv3/pull/717 gets merged
 args += "--epochs 201".split(" ")  # as the numbers are zero indexed, this provides evaluation results of the 200th run
 args += "--pretrained_weights /homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/weights/yolov4-tiny.conv.29".split(" ")
 args += f"--seed {trainer_args.seed}".split(" ")
