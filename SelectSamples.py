@@ -42,7 +42,6 @@ class SampleSelector(ABC):
             self.trainImagesPool = trainImagesPool
             self.trainImages = trainImages
 
-
     @abstractmethod
     def selectSamples(self, amount=100):
         pass
@@ -465,7 +464,6 @@ class VAEBasedSelector(SampleSelector):
         while len(new_train_images) < difference_images_amount:
             new_sample = random.choice(high_error)
             if new_sample in self.trainImagesPool:
-                self.trainImagesPool.remove(new_sample)
                 new_train_images.append(new_sample)
 
         # loop pseudo code:
