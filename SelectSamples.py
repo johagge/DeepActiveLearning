@@ -463,7 +463,10 @@ class VAEBasedSelector(SampleSelector):
         # random can't select from a set
         high_error = list(high_error)
         while len(new_train_images) < difference_images_amount:
-            new_train_images.append(random.choice(high_error))
+            new_sample = random.choice(high_error)
+            if new_sample in self.trainImagesPool:
+                self.trainImagesPool.remove(new_sample)
+                new_train_images.append(new_sample)
 
         # loop pseudo code:
         # call with x distance
