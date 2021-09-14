@@ -460,6 +460,8 @@ class VAEBasedSelector(SampleSelector):
         difference_images_amount = amount - error_images_amount
 
         high_error = self.sampler.get_high_error_samples()
+        # random can't select from a set
+        high_error = list(high_error)
         while len(new_train_images) < difference_images_amount:
             new_train_images.append(random.choice(high_error))
 
