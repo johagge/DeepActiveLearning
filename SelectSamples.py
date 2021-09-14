@@ -451,7 +451,7 @@ class VAEBasedSelector(SampleSelector):
         """
         if amount > len(self.trainImagesPool):  # make sure this doesn't crash at the end
             amount = len(self.trainImagesPool)
-        self.sampler.image_list = self.trainImagesPool # TODO
+        self.sampler.image_list = self.trainImagesPool  # TODO
         new_train_images = []
 
         # using integer division to safeguard cases where % 10 !=0
@@ -471,7 +471,7 @@ class VAEBasedSelector(SampleSelector):
         # check length after discarding images not in imagespool
         #   take x samples randomly (or run again with larger distance?)
         #   redo with smaller distance if too short
-        latent_distance = 30
+        latent_distance = 50
         while True:
             # ensure this doesn't go into an endless loop
             if latent_distance <= 0:
