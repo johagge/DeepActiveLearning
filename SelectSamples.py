@@ -111,7 +111,7 @@ class RandomSampleSelector(SampleSelector):
         if amount < len(self.trainImagesPool):
             self.trainImagesPool = self.trainImagesPool[amount:]
         else:
-            self.trainImagesPool = [] # there are no images left
+            self.trainImagesPool = []  # there are no images left
         # self.copyFiles(selectedSamples)
         self.writeSamplesToFile()
         return self.trainImages, self.trainImagesPool, selectedSamples
