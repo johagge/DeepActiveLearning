@@ -8,6 +8,7 @@ import statistics
 from imagecorruptions import corrupt
 import cv2
 import numpy as np
+import pickle
 
 from tqdm import tqdm
 from mean_average_precision import MetricBuilder
@@ -501,6 +502,57 @@ class VAEBasedSelector(SampleSelector):
 
         self.writeSamplesToFile()
         return self.trainImages, self.trainImagesPool, new_train_images
+
+class LearningLoss(SampleSelector):
+    """
+    Select samples by having a seperate neural network attached to the main network, which learns to predict loss.
+    """
+
+    def __init__(self, inputdir, outputdir, trainImages=None, trainImagesPool=None, seed=42):
+        super().__init__(inputdir, outputdir, trainImages=trainImages, trainImagesPool=trainImagesPool, seed=seed)
+
+    def selectSamples(self, amount=100):
+        """
+        selects samples based on the learned loss from the pool
+        :param amount: amount of images to add to pool
+        :return: current train images, pool of remaining images
+        """
+        # import active learning utils
+        # load network pickle
+        # net - loaded net
+        # active cycle - anything > 0 (only important because first samples are selected randomly)
+        # rand_state - give current random state
+        # unlabeled idx - list of each id in train images pool?
+        # dataset - Any pytorch dataset, which has member function "get_image_path".
+        # device - "gpu"
+        # count - amount
+        # subset_factor - size of subsets... 1?
+
+        from active_learning.active_learning.active_learning_utils import choose_indices_loss_prediction_active_learning
+        with open("active_model.pickle", "rb") as f:
+            model = pickle.load(f)
+        # TODO get pytorch dataset
+        choose_indices_loss_prediction_active_learning(net=model, active_cycle=1, rand_state=random.getstate(),
+                                                       unlabeled_idx=None, dataset=None, device="gpu",
+                                                       count=amount, subset_factor=1)
+
+        # selectedSamples = []
+        # for i in range(amount):
+            # sample = random.choice(self.trainImagesPool)
+            # selectedSamples.append(sample)
+            # self.trainImagesPool.remove(sample)
+        if amount > len(self.trainImagesPool):  # make sure this doesn't crash at the end
+            amount = len(self.trainImagesPool)
+        random.shuffle(self.trainImagesPool)
+        selectedSamples = self.trainImagesPool[:amount]
+        self.trainImages.extend(selectedSamples)
+        if amount < len(self.trainImagesPool):
+            self.trainImagesPool = self.trainImagesPool[amount:]
+        else:
+            self.trainImagesPool = []  # there are no images left
+        # self.copyFiles(selectedSamples)
+        self.writeSamplesToFile()
+        return self.trainImages, self.trainImagesPool, selectedSamples
 
 if __name__ == "__main__":
     a = RandomSampleSelector("/homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/data/custom/images",
