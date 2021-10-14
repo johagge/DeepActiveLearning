@@ -508,7 +508,7 @@ class LearningLoss(SampleSelector):
     Select samples by having a seperate neural network attached to the main network, which learns to predict loss.
     """
 
-    def __init__(self, inputdir, outputdir, trainImages=None, trainImagesPool=None, mode=None seed=42):
+    def __init__(self, inputdir, outputdir, trainImages=None, trainImagesPool=None, mode=None, seed=42):
         super().__init__(inputdir, outputdir, trainImages=trainImages, trainImagesPool=trainImagesPool, seed=seed)
 
     def selectSamples(self, amount=100):
