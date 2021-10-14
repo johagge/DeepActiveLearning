@@ -529,13 +529,16 @@ class LearningLoss(SampleSelector):
         # subset_factor - size of subsets... 1?
 
         from active_learning.active_learning.active_learning_utils import choose_indices_loss_prediction_active_learning
+        import LearningLossDataset
+        dataset = LearningLossDataset.LearningLossdataset(self.trainImagesPool)
         with open("active_model.pickle", "rb") as f:
             model = pickle.load(f)
-        # TODO get pytorch dataset
-        choose_indices_loss_prediction_active_learning(net=model, active_cycle=1, rand_state=random.getstate(),
-                                                       unlabeled_idx=None, dataset=None, device="gpu",
+        rand_state = np.random
+        selected_sample_ids = choose_indices_loss_prediction_active_learning(net=model, active_cycle=1, rand_state=rand_state,
+                                                       unlabeled_idx=len(dataset), dataset=dataset, device="gpu",
                                                        count=amount, subset_factor=1)
-
+        print("we selected sample_ids")
+        sys.exit()
         # selectedSamples = []
         # for i in range(amount):
             # sample = random.choice(self.trainImagesPool)
