@@ -1,4 +1,7 @@
 from torch.utils.data import Dataset
+import torch.nn.functional as F
+from skimage import io
+import cv2
 
 class LearningLossdataset(Dataset):
     '''
@@ -13,7 +16,11 @@ class LearningLossdataset(Dataset):
         return len(self.images)
 
     def __getitem__(self, index):
-        return self.images[index]
+        # it expects the path to the file and a target, since we have no target, we just add a zero
+        img = io.imread(self.images[index])
+        # fix size
+        img = cv2.resize(img, (416, 416))
+        return img, 0
 
     def get_image_path(self, index):
-        return self.__getitem__(index)
+        return self.images[index]
