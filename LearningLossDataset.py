@@ -3,6 +3,7 @@ import torch.nn.functional as F
 from skimage import io
 import cv2
 import numpy as np
+import copy
 
 class LearningLossdataset(Dataset):
     '''
@@ -11,7 +12,7 @@ class LearningLossdataset(Dataset):
     It requires: "dataset - Any pytorch dataset, which has member function "get_image_path"."
     '''
     def __init__(self, images_pool):
-        self.images = images_pool
+        self.images = copy.deepcopy(images_pool)
 
     def __len__(self):
         return len(self.images)
