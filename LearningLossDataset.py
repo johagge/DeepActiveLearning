@@ -2,6 +2,7 @@ from torch.utils.data import Dataset
 import torch.nn.functional as F
 from skimage import io
 import cv2
+import numpy as np
 
 class LearningLossdataset(Dataset):
     '''
@@ -20,6 +21,8 @@ class LearningLossdataset(Dataset):
         img = io.imread(self.images[index])
         # fix size
         img = cv2.resize(img, (416, 416))
+        img = np.rollaxis(img, 2, 0)
+        img = img.astype(np.float32) / 255
         return img, 0
 
     def get_image_path(self, index):

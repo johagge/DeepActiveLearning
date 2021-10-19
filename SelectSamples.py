@@ -535,8 +535,8 @@ class LearningLoss(SampleSelector):
             model = pickle.load(f)
         rand_state = np.random
         selected_sample_ids = choose_indices_loss_prediction_active_learning(net=model, active_cycle=1, rand_state=rand_state,
-                                                       unlabeled_idx=range(len(dataset)), dataset=dataset, device="cuda",
-                                                       count=amount, subset_factor=1)
+                                                       unlabeled_idx=list(range(len(dataset))), dataset=dataset,
+                                                       device="cuda", count=amount, subset_factor=1)
         print("we selected sample_ids")
         sys.exit()
         # selectedSamples = []
