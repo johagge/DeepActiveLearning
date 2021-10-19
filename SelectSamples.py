@@ -537,23 +537,12 @@ class LearningLoss(SampleSelector):
         selected_sample_ids = choose_indices_loss_prediction_active_learning(net=model, active_cycle=1, rand_state=rand_state,
                                                        unlabeled_idx=list(range(len(dataset))), dataset=dataset,
                                                        device="cuda", count=amount, subset_factor=1)
-        print("we selected sample_ids")
-        sys.exit()
-        # selectedSamples = []
-        # for i in range(amount):
-            # sample = random.choice(self.trainImagesPool)
-            # selectedSamples.append(sample)
-            # self.trainImagesPool.remove(sample)
-        if amount > len(self.trainImagesPool):  # make sure this doesn't crash at the end
-            amount = len(self.trainImagesPool)
-        random.shuffle(self.trainImagesPool)
-        selectedSamples = self.trainImagesPool[:amount]
-        self.trainImages.extend(selectedSamples)
-        if amount < len(self.trainImagesPool):
-            self.trainImagesPool = self.trainImagesPool[amount:]
-        else:
-            self.trainImagesPool = []  # there are no images left
-        # self.copyFiles(selectedSamples)
+        selected_samples = []
+        for sample in selected_sample_ids[0]:
+            sample_path = dataset.get_image_path(sample)
+            selected_samples.extend(sample_path)
+            self.trainImages.extend(sample_path)
+            self.trainImagesPool.remove(sample_path)
         self.writeSamplesToFile()
         return self.trainImages, self.trainImagesPool, selectedSamples
 
