@@ -540,8 +540,8 @@ class LearningLoss(SampleSelector):
         selected_samples = []
         for sample in selected_sample_ids[0]:
             sample_path = dataset.get_image_path(sample)
-            selected_samples.extend(sample_path)
-            self.trainImages.extend(sample_path)
+            selected_samples.append(sample_path)
+            self.trainImages.append(sample_path)
             self.trainImagesPool.remove(sample_path)
         self.writeSamplesToFile()
         return self.trainImages, self.trainImagesPool, selected_samples
