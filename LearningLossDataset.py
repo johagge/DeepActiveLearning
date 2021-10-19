@@ -4,9 +4,6 @@ from skimage import io
 import cv2
 import numpy as np
 import copy
-import torchvision.transforms as transforms
-from pytorchyolo.utils.transforms import Resize, DEFAULT_TRANSFORMS
-
 
 class LearningLossdataset(Dataset):
     '''
@@ -21,20 +18,15 @@ class LearningLossdataset(Dataset):
         return len(self.images)
 
     def __getitem__(self, index):
-        img = cv2.imread(self.get_image_path(index))
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img = io.imread(self.images[index])
+        # fix size
+        img = cv2.resize(img, (416, 416))
+        img = np.rollaxis(img, 2, 0)
+        img = img.astype(np.float32) / 255
 
-        input_img = transforms.Compose([
-            DEFAULT_TRANSFORMS,
-            Resize(416)])(
-            (img, np.zeros((1, 5))))[0]
-        # .unsqueeze(0) removed the unsqueeze, because it's only needed if you only need one image at a time
-
-        # it expects the path to the file and a target, since we have no target, we just add a zero
+        # it expects the image and a target, since we have no target, we just add a zero
         # this is not an issue, because the target is discarded anyway in the library
-        return input_img, 0
-
-
+        return img, 0
 
     def get_image_path(self, index):
         return self.images[index]
