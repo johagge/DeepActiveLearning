@@ -27,7 +27,8 @@ class LearningLossdataset(Dataset):
         input_img = transforms.Compose([
             DEFAULT_TRANSFORMS,
             Resize(416)])(
-            (img, np.zeros((1, 5))))[0].unsqueeze(0)
+            (img, np.zeros((1, 5))))[0]
+        # .unsqueeze(0) removed the unsqueeze, because it's only needed if you only need one image at a time
 
         # it expects the path to the file and a target, since we have no target, we just add a zero
         # this is not an issue, because the target is discarded anyway in the library
