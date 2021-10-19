@@ -544,7 +544,7 @@ class LearningLoss(SampleSelector):
             self.trainImages.extend(sample_path)
             self.trainImagesPool.remove(sample_path)
         self.writeSamplesToFile()
-        return self.trainImages, self.trainImagesPool, selectedSamples
+        return self.trainImages, self.trainImagesPool, selected_samples
 
 if __name__ == "__main__":
     a = RandomSampleSelector("/homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/data/custom/images",
