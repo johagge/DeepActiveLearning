@@ -536,7 +536,7 @@ class LearningLoss(SampleSelector):
         rand_state = np.random
         selected_sample_ids = choose_indices_loss_prediction_active_learning(net=model, active_cycle=1, rand_state=rand_state,
                                                        unlabeled_idx=list(range(len(dataset))), dataset=dataset,
-                                                       device="cuda", count=amount, subset_factor=1)
+                                                       device="cuda", count=amount, subset_factor=100000000)
         selected_samples = []
         for sample in selected_sample_ids[0]:
             sample_path = dataset.get_image_path(sample)
