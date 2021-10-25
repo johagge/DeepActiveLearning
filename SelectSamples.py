@@ -163,7 +163,6 @@ class meanConfidenceSelector(SampleSelector):
                 else:
                     confidences = [cfd[4] for cfd in boxes]
                     meanConfidence = statistics.mean(confidences)
-                    predictionConfidences.append([meanConfidence, path])
                 predictionConfidences.append([meanConfidence, path])
 
             elif self.mode == "median":
