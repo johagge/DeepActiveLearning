@@ -487,7 +487,7 @@ class VAEBasedSelector(SampleSelector):
             # discard images that are not in the pool
             # TODO test this
             for sample in high_difference:
-                if sample not in self.trainImagesPool and sample not in new_train_images:
+                if sample not in self.trainImagesPool:
                     high_difference.remove(sample)
 
             if len(high_difference) < amount:
@@ -495,7 +495,9 @@ class VAEBasedSelector(SampleSelector):
             else:
                 break
         while len(new_train_images) < amount:
-            new_train_images.append(random.choice(high_difference))
+            sample = random.choice(high_difference)
+            if sample not in new_train_images:
+                new_train_images.append(sample)
 
         self.trainImages.extend(new_train_images)
         for sample in new_train_images:
