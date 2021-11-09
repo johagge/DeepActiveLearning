@@ -465,8 +465,9 @@ class VAEBasedSelector(SampleSelector):
         # select high error images
         while len(new_train_images) < difference_images_amount:
             new_sample = random.choice(high_error)
-            if new_sample in self.trainImagesPool:
+            if new_sample in self.trainImagesPool and new_sample not in new_train_images:
                 new_train_images.append(new_sample)
+                high_error.remove(new_sample)
 
         # loop pseudo code to select difference based images:
         # call with x distance
@@ -498,6 +499,7 @@ class VAEBasedSelector(SampleSelector):
             sample = random.choice(high_difference)
             if sample not in new_train_images:
                 new_train_images.append(sample)
+                high_difference.remove(sample)
 
         self.trainImages.extend(new_train_images)
         for sample in new_train_images:
