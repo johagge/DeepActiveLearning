@@ -28,7 +28,7 @@ args += "--evaluation_interval 25".split(" ")
 
 sys.argv = args  # overwrite sys argv with new arguments
 
-amount = 10
+amount = 100
 cluster_amount = 10
 inputdir = "/srv/ssd_nvm/15hagge/torso-fuer-pytorchyolo/custom/images/train"
 outputdir = "/homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/data/"
@@ -141,7 +141,6 @@ for run in range(10):  # range(math.ceil(imagePoolSize / amount)):
 
 
     if len(sampler.trainImages) < (run+1) * amount - 1:  # -1 just in case there is a single one off error
-        # TODO verify length of actual train.txt file
         sys.stderr.write("Too few images found")
         sys.stderr.write(f"Found {len(sampler.trainImages)} images in training. Expected {(run+1) * amount}")
         sys.stderr.write(f"currently in run {run}")
