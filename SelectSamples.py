@@ -480,7 +480,7 @@ class VAEBasedSelector(SampleSelector):
         error_value = 1.64
 
         # select high error images
-        while len(new_train_images) < difference_images_amount:
+        while len(new_train_images) < error_images_amount:
             if len(high_error) == 0:
                 error_value -= 0.01
                 print("reduced error value")
