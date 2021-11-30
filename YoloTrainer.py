@@ -8,7 +8,7 @@ import imageDifferenceCalculator
 
 parser = argparse.ArgumentParser(description="Trains a YOLO and selects the most helpful samples for annotating")
 parser.add_argument("-m", "--mode", type=str, help="Mode to select samples, e.g. 'random'")
-parser.add_argument("-s", "--seed", type=int, help="Seed to use for the sampler") # todo empty == 42
+parser.add_argument("-s", "--seed", type=int, help="Seed to use for the sampler")
 
 trainer_args = parser.parse_args()
 
