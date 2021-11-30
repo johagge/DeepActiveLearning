@@ -512,15 +512,19 @@ class VAEBasedSelector(SampleSelector):
                 break
             high_difference = self.sampler.get_very_different_samples(latent_distance_to_prune=latent_distance)
 
+            samples_to_be_removed = []
             # discard images that are not in the pool
             for sample in high_difference:
-                if sample not in self.trainImagesPool or sample in new_train_images:  # if it was added by error
-                    high_difference.remove(sample)
+                if sample not in self.trainImagesPool or sample in new_train_images:  # if it was added by high error
+                    samples_to_be_removed.append(sample)
+            for sample in samples_to_be_removed:
+                high_difference.remove(sample)
 
-            if len(high_difference) < amount:
+            if len(high_difference) < difference_images_amount:
                 latent_distance -= 5
             else:
                 break
+
         while len(new_train_images) < amount:
             sample = random.choice(high_difference)
             if sample not in new_train_images:
