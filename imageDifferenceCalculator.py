@@ -158,11 +158,11 @@ class Vae(DifferenceCalculator):
         self.tree = self.embeddings["tree"]
         self.errors = self.embeddings["errors"]
 
-    def get_high_error_samples(self):
+    def get_high_error_samples(self, value=1.64):
         errors = self.errors
 
-        # using the 1.64 value as in TORSO-21
-        error_threshold = errors.mean() + errors.std() * 1.64
+        # by default using the 1.64 value as in TORSO-21
+        error_threshold = errors.mean() + errors.std() * value
         not_recreatable = set([self.paths[i] for i in np.where(errors >= error_threshold)[0]])
         return not_recreatable
 

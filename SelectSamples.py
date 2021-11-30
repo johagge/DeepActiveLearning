@@ -461,13 +461,23 @@ class VAEBasedSelector(SampleSelector):
         high_error = self.sampler.get_high_error_samples()
         # random can't select from a set
         high_error = list(high_error)
+        error_value = 1.64
 
         # select high error images
         while len(new_train_images) < difference_images_amount:
+            if len(high_error) == 0:
+                error_value -= 0.01
+                print("reduced error value")
+                high_error = self.sampler.get_high_error_samples(error_value)
+                # random can't select from a set
+                high_error = list(high_error)
+
             new_sample = random.choice(high_error)
             if new_sample in self.trainImagesPool and new_sample not in new_train_images:
                 new_train_images.append(new_sample)
                 high_error.remove(new_sample)
+            else:
+                high_error.remove(new_sample)  # still remove, even if we can't add it to make loop faster
 
         # loop pseudo code to select difference based images:
         # call with x distance
