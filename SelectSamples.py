@@ -491,6 +491,7 @@ class VAEBasedSelector(SampleSelector):
             new_sample = random.choice(high_error)
             if new_sample in self.trainImagesPool and new_sample not in new_train_images:
                 new_train_images.append(new_sample)
+                self.trainImagesPool.remove(new_sample)
                 high_error.remove(new_sample)
             else:
                 high_error.remove(new_sample)  # still remove, even if we can't add it to make loop faster
@@ -512,7 +513,6 @@ class VAEBasedSelector(SampleSelector):
             high_difference = self.sampler.get_very_different_samples(latent_distance_to_prune=latent_distance)
 
             # discard images that are not in the pool
-            # TODO test this
             for sample in high_difference:
                 if sample not in self.trainImagesPool or sample in new_train_images:  # if it was added by error
                     high_difference.remove(sample)
@@ -525,11 +525,10 @@ class VAEBasedSelector(SampleSelector):
             sample = random.choice(high_difference)
             if sample not in new_train_images:
                 new_train_images.append(sample)
+                self.trainImagesPool.remove(sample)
                 high_difference.remove(sample)
 
         self.trainImages.extend(new_train_images)
-        for sample in new_train_images:
-            self.trainImagesPool.remove(sample)
 
         self.writeSamplesToFile()
         return self.trainImages, self.trainImagesPool, new_train_images
