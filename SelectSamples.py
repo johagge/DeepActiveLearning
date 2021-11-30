@@ -145,6 +145,8 @@ class meanConfidenceSelector(SampleSelector):
         yolo = yoloPredictor.yoloPredictor()  # load weights here, because after sampling new weights are trained
         predictionConfidences = []
 
+        discarded_samples = []
+
         print("Selecting samples based on confidences:")
         for path in tqdm(self.trainImagesPool):
             boxes = yolo.predict(path)
@@ -155,6 +157,8 @@ class meanConfidenceSelector(SampleSelector):
                     confidences = [cfd[4] for cfd in boxes]
                     meanConfidence = statistics.mean(confidences)
                     predictionConfidences.append([meanConfidence, path])
+                else:
+                    discarded_samples.append(path)
 
             # prefer images with no bounding boxes, because objects are very common in our domain
             elif self.mode == "mean_with_no_boxes":
@@ -170,18 +174,24 @@ class meanConfidenceSelector(SampleSelector):
                     confidences = [cfd[4] for cfd in boxes]
                     median = statistics.median(confidences)
                     predictionConfidences.append([median, path])
+                else:
+                    discarded_samples.append(path)
 
             elif self.mode == "min":
                 if len(boxes) > 0:
                     confidences = [cfd[4] for cfd in boxes]
                     minConfidence = min(confidences)
                     predictionConfidences.append([minConfidence, path])
+                else:
+                    discarded_samples.append(path)
 
             elif self.mode == "lowest_max" or self.mode == "max":
                 if len(boxes) > 0:
                     confidences = [cfd[4] for cfd in boxes]
                     maxConfidence = max(confidences)
                     predictionConfidences.append([maxConfidence, path])
+                else:
+                    discarded_samples.append(path)
 
 
         sortedPredictions = sorted(predictionConfidences)  # sort the list so we can take the first #amount items
@@ -193,6 +203,12 @@ class meanConfidenceSelector(SampleSelector):
             self.trainImagesPool.remove(image[1])  # remove about to be labeled images from pool
             self.trainImages.append(image[1])
             new_train_images.append(image[1])
+        while len(new_train_images) < amount:
+            sample = random.choice(discarded_samples)
+            self.trainImagesPool.remove(sample)
+            self.trainImages.append(sample)
+            new_train_images.append(sample)
+            print("Had to use a previously discarded sample")
         self.writeSamplesToFile()
         return self.trainImages, self.trainImagesPool, new_train_images
 
