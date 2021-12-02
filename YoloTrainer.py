@@ -3,6 +3,7 @@ import os
 from pytorchyolo import train
 import SelectSamples as samples
 import argparse
+import yaml
 
 import imageDifferenceCalculator
 
@@ -12,16 +13,17 @@ parser.add_argument("-s", "--seed", type=int, help="Seed to use for the sampler"
 
 trainer_args = parser.parse_args()
 
-
+with open("config.yaml", "r") as f:
+    config = yaml.safe_load(f)
 
 # hacky way to set arguments...
 # this way we can use the argparse used by pytorchyolo
 args = [sys.argv[0]]  # put python filename in sys.argv
-args += "--model /homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/config/robocup.cfg".split(" ")
-args += "--data /homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/data/robocup.data".split(" ")
+args += f"--model {config['cfg_path']}".split(" ")
+args += f"--data {config['data_path']}".split(" ")
 # epochs are n+1 until https://github.com/eriklindernoren/PyTorch-YOLOv3/pull/717 gets merged
-args += "--epochs 201".split(" ")  # as the numbers are zero indexed, this provides evaluation results of the 200th run
-args += "--pretrained_weights /homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/weights/yolov4-tiny.conv.29".split(" ")
+args += f"--epochs {config['epochs']}".split(" ")  # as the numbers are zero indexed, this provides evaluation results of the 200th run
+args += f"--pretrained_weights {config['pretrained_weights_path']}".split(" ")
 args += f"--seed {trainer_args.seed}".split(" ")
 args += "--n_cpu 4".split(" ")
 args += "--evaluation_interval 25".split(" ")
@@ -30,9 +32,8 @@ sys.argv = args  # overwrite sys argv with new arguments
 
 amount = 100
 cluster_amount = 10
-inputdir = "/srv/ssd_nvm/15hagge/torso-fuer-pytorchyolo/custom/images/train"
-outputdir = "/homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/data/"
-
+inputdir = config['input_dir']
+outputdir = config['outputdir']
 
 # Generate the first samples randomly assuming we have no suitable heuristic for the first ones
 firstSampler = samples.RandomSampleSelector(inputdir, outputdir, seed=trainer_args.seed)

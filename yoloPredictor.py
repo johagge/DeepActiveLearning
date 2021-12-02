@@ -1,13 +1,14 @@
 from pytorchyolo import detect, models
 import cv2
+import yaml
 
 class yoloPredictor():
 
-    def __init__(self,
-                 cfg="/homes/15hagge/deepActiveLearning/PyTorch-YOLOv3/config/robocup.cfg",
-                 weights="/homes/15hagge/deepActiveLearning/DeepActiveLearning/checkpoints/yolov3_ckpt_199.pth"):
-        self.cfg = cfg
-        self.weights = weights
+    def __init__(self):
+        with open("config.yaml", "r") as f:
+            config = yaml.safe_load(f)
+        self.cfg = config['cfg_path']
+        self.weights = config['last_weights']
         self.model = models.load_model(self.cfg, self.weights)
         self.conf_thresh = 0.1
 
