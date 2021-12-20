@@ -51,7 +51,7 @@ colors = {"random": "red",
           "learnloss": "blue",
           }
 
-logdir = "log100"
+logdir = "log10"
 
 files = glob.glob(os.path.join(logdir, "*.txt"))
 print(files)
@@ -94,7 +94,7 @@ for key, value in results.items():
         result_list = []
         for n in range(0, 10):
             for run in foo[n]:
-                run_list.append((n+1)*100)
+                run_list.append((n+1)*10)
                 result_list.append(run)
         new_frame = pd.DataFrame(
             {
@@ -122,7 +122,7 @@ for i, cat in enumerate(categories):
     fig, ax = plt.subplots()
     used_images = [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000]
     used_images = np.array(used_images)
-    used_images = used_images
+    used_images = used_images /10
     for key, value in results.items():
         # print(key)
         if key not in cat and key != 'random':
@@ -130,7 +130,7 @@ for i, cat in enumerate(categories):
         if isinstance(value, pd.DataFrame):
             # value = value.transpose()
             # print(value)
-            sns.lineplot(data=value, x='used_images', y='map_values', label=key, color=colors[key])# y=key)
+            sns.lineplot(data=value, x='used_images', y='map_values', label=category_names[key], color=colors[key])# y=key)
             continue  # previous way of plotting
             # 95% confidence interval
             ci = 1.96 * np.std(value) * np.mean(value)
@@ -164,4 +164,5 @@ for i, cat in enumerate(categories):
     # put the legend outside of graph
     # do it after showing the figure, because for some reason the bbox inches tight only works in savefig
     ax.legend(bbox_to_anchor=(1, 1))
+    #plt.legend(loc='lower right')
     fig.savefig(f"viz/{logdir}_{categories[i]}_graph.png", dpi=200, bbox_inches='tight')
